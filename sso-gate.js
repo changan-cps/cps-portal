@@ -9,6 +9,9 @@
  *                 otherwise the visitor is sent to the portal to sign in (and back afterwards) or sees a lock page.
  *   data-ticket   Launcher for an app on another origin (Apps Script): same check, but it also gets a 2-minute signed
  *                 ticket → window.CPS_SSO = {ticket, at, renew()} and a "cps-sso" event on document.
+ *   data-token    Whole page, for an app whose own backend checks every request (IE Digital): also keeps a signed
+ *                 app token. window.cpsAppToken() returns it ('' when none); window.CPS_READY resolves when the
+ *                 first check is done; window.cpsGateReset() forgets the cached result.
  *   data-manual   Only parts of the app are protected (e.g. Lean Quest: trainees play freely, facilitator views are
  *                 locked). Nothing happens at load; the app calls
  *                     CPS_GATE.require().then(function (ok) { if (ok) openTheProtectedView(); })
@@ -23,7 +26,7 @@
   var script = document.currentScript, app = script.getAttribute('data-app');
   // data-admin-app: a page whose admin view is "#admin" on the same file is checked as that app instead
   if (location.hash === '#admin' && script.getAttribute('data-admin-app')) app = script.getAttribute('data-admin-app');
-  var wantTicket = script.hasAttribute('data-ticket'), manual = script.hasAttribute('data-manual');
+  var wantTicket = script.hasAttribute('data-ticket'), manual = script.hasAttribute('data-manual'), wantToken = script.hasAttribute('data-token');
   var portal = new URL('.', script.src).href;                       // …/cps-portal/
   var TOKEN_KEY = 'cpsPortal.sso', OK_KEY = 'cpsGate.ok.' + app, OK_MS = 10 * 60 * 1000, GRACE_MS = 7 * 24 * 3600 * 1000;
   var ssoUrl = '';
@@ -31,6 +34,9 @@
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
   function last() { try { return JSON.parse(get(OK_KEY)) || {}; } catch (e) { return {}; } }
+  function tokenOk(s) { return !wantToken || (!!s.tok && s.exp > Date.now() + 5 * 60000); }
+  window.cpsAppToken = function () { var s = last(); return s.t === get(TOKEN_KEY) && s.tok && s.exp > Date.now() ? s.tok : ''; };
+  window.cpsGateReset = function () { try { localStorage.removeItem(OK_KEY); } catch (e) { /* ignore */ } };
   function toPortal() { location.replace(portal + '?next=' + encodeURIComponent(location.href)); }
   function post(action) {
     return fetch(ssoUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, token: get(TOKEN_KEY), app: app }) })
@@ -41,7 +47,7 @@
   function check() {
     var token = get(TOKEN_KEY), seen = last();
     // checked a moment ago with this same sign-in: don't make every page load wait for the server
-    if (!wantTicket && token && seen.t === token && Date.now() - seen.at < OK_MS) return Promise.resolve({ status: 'ok' });
+    if (!wantTicket && token && seen.t === token && Date.now() - seen.at < OK_MS && tokenOk(seen)) return Promise.resolve({ status: 'ok' });
     return fetch(portal + 'sso.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; }, function () { return undefined; })
       .then(function (cfg) {
@@ -49,8 +55,8 @@
         if (cfg === undefined) throw new Error('offline');
         ssoUrl = cfg.url;
         if (!token) return { status: 'auth' };
-        return post(wantTicket ? 'ticket' : 'check').then(function (j) {
-          if (j.ok) { set(OK_KEY, JSON.stringify({ t: token, at: Date.now() })); window.CPS_USER = j.data.user; return { status: 'ok', ticket: j.data.ticket }; }
+        return post(wantTicket ? 'ticket' : wantToken ? 'apptoken' : 'check').then(function (j) {
+          if (j.ok) { set(OK_KEY, JSON.stringify({ t: token, at: Date.now(), tok: j.data.apptoken, exp: j.data.exp })); window.CPS_USER = j.data.user; return { status: 'ok', ticket: j.data.ticket }; }
           if (j.code === 'AUTH') { try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ } return { status: 'auth' }; }
           if (j.code === 'FORBIDDEN') return { status: 'forbidden' };
           throw new Error(j.message || j.code);
@@ -58,7 +64,7 @@
       })
       .catch(function () {
         // server unreachable: someone verified on this device in the last 7 days may keep working (e.g. flaky Wi-Fi on the line)
-        return { status: !wantTicket && token && seen.t === token && Date.now() - seen.at < GRACE_MS ? 'ok' : 'offline' };
+        return { status: !wantTicket && token && seen.t === token && Date.now() - seen.at < GRACE_MS && (!wantToken || seen.exp > Date.now()) ? 'ok' : 'offline' };
       });
   }
 
@@ -108,7 +114,7 @@
   document.documentElement.appendChild(hide);
   function show() { if (hide.parentNode) hide.parentNode.removeChild(hide); }
 
-  check().then(function (r) {
+  window.CPS_READY = check().then(function (r) {
     if (r.status === 'auth') { toPortal(); return; }
     if (r.status === 'forbidden' || r.status === 'offline') { lock(r.status, true); show(); return; }
     show();

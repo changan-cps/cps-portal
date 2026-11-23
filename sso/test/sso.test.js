@@ -116,3 +116,20 @@ test('large data is split across properties', () => {
   assert.ok(Number(sim.props.DB_N) > 1);
   assert.equal(ok('login', { username: 'user149', password: 'pass123' }).user.name, 'ผู้ใช้ทดสอบ 149');
 });
+
+test('apptoken: reusable signed token for backends, only for apps the user may use', () => {
+  const { sim, ok, fail, admin } = boot();
+  const v = ok('save', { token: admin.token, rev: admin.rev, apps: APPS, news: [], users: users([{ username: 'ie1', name: 'IE One', role: 'user', apps: ['lean-quest'], pw: 'pass123' }]) });
+  const s = ok('login', { username: 'ie1', password: 'pass123' });
+  fail('apptoken', { token: s.token, app: 'cps-pjo-audit' }, 'FORBIDDEN');
+  fail('apptoken', { token: 'x.y', app: 'lean-quest' }, 'AUTH');
+  const a = ok('apptoken', { token: s.token, app: 'lean-quest' });
+  const [part, sig] = a.apptoken.split('.');
+  assert.equal(sig, crypto.createHmac('sha256', sim.run('showSecret')).update(part).digest('base64url'));
+  const p = JSON.parse(Buffer.from(part, 'base64url').toString());
+  assert.deepEqual([p.t, p.u, p.n, p.app], ['a', 'ie1', 'IE One', 'lean-quest']);
+  assert.ok(p.exp === a.exp && a.exp - Date.now() > 11 * 3600000 && a.exp - Date.now() <= 12 * 3600000);
+  assert.equal(sim.post('me', { token: a.apptoken }).code, 'AUTH', 'an app token is not a portal session');
+  assert.equal(sim.post('verify', { ticket: a.apptoken, app: 'lean-quest' }).ok, false);
+  assert.ok(v.rev);
+});

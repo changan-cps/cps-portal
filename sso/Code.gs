@@ -14,6 +14,7 @@
 var SESSION_HOURS = 12;          // normal login
 var REMEMBER_DAYS = 30;          // "remember me on this device"
 var TICKET_SECONDS = 120;        // hand-off ticket lifetime
+var APPTOKEN_HOURS = 12;         // app token lifetime (backends that check every request)
 var PW_ITERATIONS = 1000;
 var MAX_FAILS = 5, LOCK_SECONDS = 900;
 var CHUNK = 8000;                // Script Properties allow ~9 KB per value
@@ -212,6 +213,20 @@ var ACTIONS = {
     var role = (u.roles || {})[app.id] || '';
     if (!role && app.roles.length) role = isAdmin_(u) ? app.roles[0] : app.roles[app.roles.length - 1];
     return { ticket: seal_({ t: 'k', u: u.username, n: u.name || u.username, app: app.id, role: role, exp: Date.now() + TICKET_SECONDS * 1000, jti: Utilities.getUuid() }), url: app.url };
+  },
+
+  /**
+   * App token for an app whose own backend must check every request (IE Digital…): like a ticket but reusable
+   * until it expires. The backend verifies the signature with SSO_SECRET — no call to this service needed.
+   *   base64url(JSON {t:'a', u, n, app, role, exp}) + "." + base64url(HMAC-SHA256(part1, SSO_SECRET))
+   */
+  apptoken: function (r) {
+    var db = load_(), u = session_(db, r.token);
+    var app = db.apps.filter(function (a) { return a.id === r.app; })[0];
+    if (!app || !canUse_(u, app)) throw err_('FORBIDDEN', 'You do not have access to this app');
+    var exp = Date.now() + APPTOKEN_HOURS * 3600000, role = (u.roles || {})[app.id] || '';
+    return { apptoken: seal_({ t: 'a', u: u.username, n: u.name || u.username, app: app.id, role: role, exp: exp }), exp: exp,
+      user: { username: u.username, name: u.name || u.username, role: role } };
   },
 
   /** For static apps on the same site (Lean Quest, IE Digital…): is this signed-in user allowed to use `app`? */
