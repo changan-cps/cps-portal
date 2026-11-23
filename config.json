@@ -1,0 +1,47 @@
+{
+  "apps": [
+    {
+      "id": "lean-quest",
+      "name": "Lean Quest",
+      "url": "https://changan-cps.github.io/lean-quest/",
+      "desc": "เกม/กิจกรรม Lean",
+      "icon": "🎯",
+      "color": "#0b5cad"
+    },
+    {
+      "id": "lean-quest-admin",
+      "name": "Lean Quest (Admin)",
+      "url": "https://changan-cps.github.io/lean-quest/index.html#admin",
+      "desc": "หน้าจัดการ Lean Quest",
+      "icon": "🛠️",
+      "color": "#6b4bc4"
+    },
+    {
+      "id": "local-8090",
+      "name": "Local App (8090)",
+      "url": "http://localhost:8090/",
+      "desc": "แอปที่รันบนเครื่อง",
+      "icon": "💻",
+      "color": "#3d7a5a"
+    },
+    {
+      "id": "cps-pjo-audit",
+      "name": "CPS PJO Audit",
+      "url": "https://changan-cps.github.io/cps-pjo-audit/",
+      "desc": "ระบบตรวจ PJO",
+      "icon": "📋",
+      "color": "#c2571a"
+    }
+  ],
+  "users": [
+    {
+      "username": "yureeporn",
+      "name": "Yureeporn Klangthong",
+      "role": "admin",
+      "apps": [],
+      "salt": "6b51cc54a688c400c2121903227f939f",
+      "hash": "dbca3bb16e7cda1b48bc5ad6e497f0bb3577e5b86eadc40ba04571fb8f336406"
+    }
+  ],
+  "updatedAt": 1795406969521
+}
