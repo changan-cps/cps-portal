@@ -14,15 +14,19 @@
       "url": "https://changan-cps.github.io/lean-quest/index.html#admin",
       "desc": "Lean Quest 管理 · Admin",
       "icon": "🛠️",
-      "color": "#6b4bc4"
+      "color": "#6b4bc4",
+      "kind": "quick",
+      "server": "external"
     },
     {
       "id": "local-8090",
-      "name": "Local App (8090)",
-      "url": "http://localhost:8090/",
-      "desc": "本地应用 · Local app",
+      "name": "IE Digital Program (Admin)",
+      "url": "https://changan-cps.github.io/IE-Digital-Program/admin.html",
+      "desc": "IE 数字化管理 · IE Digital admin",
       "icon": "💻",
-      "color": "#3d7a5a"
+      "color": "#3d7a5a",
+      "kind": "quick",
+      "server": "external"
     },
     {
       "id": "cps-pjo-audit",
@@ -31,6 +35,66 @@
       "desc": "PJO 审核 · PJO audit",
       "icon": "📋",
       "color": "#c2571a"
+    },
+    {
+      "id": "cps-digital-platform",
+      "name": "CPS Digital Platform",
+      "url": "http://cps.changan.co.th/",
+      "desc": "工厂 CPS 系统 · Factory CPS system",
+      "kind": "tile",
+      "server": "factory",
+      "icon": "🏭",
+      "color": "#b0305c"
+    },
+    {
+      "id": "cps-health-check",
+      "name": "CPS Health Check",
+      "url": "https://changan-cps.github.io/Healthcheck/",
+      "desc": "季度健康检查 · Quarterly health check",
+      "kind": "tile",
+      "server": "external",
+      "icon": "📈",
+      "color": "#2a7f8f"
+    },
+    {
+      "id": "ie-digital-program",
+      "name": "IE Digital Program",
+      "url": "https://changan-cps.github.io/IE-Digital-Program/",
+      "desc": "IE 工作分析 · IE work analysis",
+      "kind": "tile",
+      "server": "external",
+      "icon": "⚙️",
+      "color": "#8a6d1a"
+    },
+    {
+      "id": "jdy",
+      "name": "JDY",
+      "url": "https://jdy.changan.com.cn/",
+      "desc": "工厂简道云 · Factory JDY",
+      "kind": "tile",
+      "server": "external",
+      "icon": "✅",
+      "color": "#4a5568"
+    },
+    {
+      "id": "downtime-analyze-system",
+      "name": "Downtime Analyze System",
+      "url": "http://10.24.7.22:9091/",
+      "desc": "GA 停机分析 · GA downtime analysis",
+      "kind": "tile",
+      "server": "factory",
+      "icon": "🔧",
+      "color": "#0b5cad"
+    },
+    {
+      "id": "cps-survey",
+      "name": "CPS Survey",
+      "url": "https://changan-cps.github.io/CPS-Observation/?page=dash",
+      "desc": "CPS 实施调查 · CPS survey",
+      "kind": "tile",
+      "server": "external",
+      "icon": "📦",
+      "color": "#6b4bc4"
     }
   ],
   "users": [
@@ -39,9 +103,9 @@
       "name": "Yureeporn Klangthong",
       "role": "admin",
       "apps": [],
-      "salt": "6b51cc54a688c400c2121903227f939f",
-      "hash": "dbca3bb16e7cda1b48bc5ad6e497f0bb3577e5b86eadc40ba04571fb8f336406"
+      "salt": "f1960451149a0b75881569fe14647025",
+      "hash": "09e047fb46a6c265615d5f7ed670c13a4b27c2f1389925d8c8daba58cace3235"
     }
   ],
-  "updatedAt": 1795406969521
+  "updatedAt": 1795408405152
 }
