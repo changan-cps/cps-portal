@@ -35,6 +35,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
 .lang button{border:0;background:none;color:inherit;padding:6px 11px;cursor:pointer;font-size:13px;opacity:.75}
 .lang button.on{background:var(--brand);color:var(--brand-ink);font-weight:700;opacity:1}
 .auth .lang{display:flex;width:max-content;margin:-8px -8px 10px auto}
+.rolesel{width:auto;min-width:92px;padding:5px 6px;font-size:13px}
 .ghbar:empty{display:none}
 .ghbar{border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px;border:1px solid var(--line);background:rgba(59,155,255,.10)}
 .ghbar span{flex:1;min-width:200px}
@@ -284,6 +285,29 @@ Object.assign(I18N.th, {
   ghErr:m => `❌ อัปโหลดไม่สำเร็จ: ${m}`, ghRetry:'ลองใหม่', ghBadToken:'token ไม่ถูกต้อง หมดอายุ หรือไม่มีสิทธิ์เขียน cps-portal', ghChecking:'กำลังตรวจสอบ token…',
 });
 
+// --- SSO mode ---
+Object.assign(I18N.zh, {
+  ssoWait:'请稍候…', ssoLocked:'密码错误次数过多，请 15 分钟后再试', ssoExpired:'登录已过期，请重新登录', ssoForbidden:'您没有此应用的权限',
+  ssoDown:'无法连接登录服务器，请检查网络后重试。', ssoSaving:'☁️ 正在保存…', ssoSaved:'✅ 已保存 — 所有设备立即生效', ssoSaveErr:m => `❌ 保存失败：${m}`,
+  ssoOpening:'正在打开…', roleNone:'— 无权限 —', appSso:'单点登录 (SSO)', ssoModeOff:'普通链接', ssoModeTicket:'自动登录 (应用已支持 CPS SSO)',
+  appRoles:'应用内角色 (逗号分隔，第一个为最高权限，可留空)',
+  ssoPubTitle:'☁️ 数据保存在 CPS SSO 服务器', ssoPubText:'每次修改都会自动保存，所有设备立即生效，无需上传文件。', ssoBackup:'⬇️ 下载备份',
+});
+Object.assign(I18N.en, {
+  ssoWait:'Please wait…', ssoLocked:'Too many wrong passwords. Try again in 15 minutes.', ssoExpired:'Your session has expired. Please sign in again.', ssoForbidden:'You do not have access to this app',
+  ssoDown:'Cannot reach the login server. Check your connection and try again.', ssoSaving:'☁️ Saving…', ssoSaved:'✅ Saved — live on every device', ssoSaveErr:m => `❌ Save failed: ${m}`,
+  ssoOpening:'Opening…', roleNone:'— no access —', appSso:'Single sign-on (SSO)', ssoModeOff:'Plain link', ssoModeTicket:'Sign in automatically (app supports CPS SSO)',
+  appRoles:'Roles inside the app (comma separated, highest first, optional)',
+  ssoPubTitle:'☁️ Data lives on the CPS SSO server', ssoPubText:'Every change is saved automatically and is live on every device at once. No files to upload.', ssoBackup:'⬇️ Download backup',
+});
+Object.assign(I18N.th, {
+  ssoWait:'กรุณารอสักครู่…', ssoLocked:'ใส่รหัสผิดหลายครั้ง กรุณารอ 15 นาที', ssoExpired:'หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่', ssoForbidden:'คุณไม่มีสิทธิ์ใช้แอปนี้',
+  ssoDown:'เชื่อมต่อเซิร์ฟเวอร์ login ไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่', ssoSaving:'☁️ กำลังบันทึก…', ssoSaved:'✅ บันทึกแล้ว — ทุกเครื่องเห็นทันที', ssoSaveErr:m => `❌ บันทึกไม่สำเร็จ: ${m}`,
+  ssoOpening:'กำลังเปิด…', roleNone:'— ไม่มีสิทธิ์ —', appSso:'เข้าสู่ระบบอัตโนมัติ (SSO)', ssoModeOff:'ลิงก์ธรรมดา', ssoModeTicket:'เข้าให้อัตโนมัติ (แอปรองรับ CPS SSO แล้ว)',
+  appRoles:'บทบาทในแอป (คั่นด้วย , · ตัวแรกสิทธิ์สูงสุด · เว้นว่างได้)',
+  ssoPubTitle:'☁️ ข้อมูลเก็บที่เซิร์ฟเวอร์ CPS SSO', ssoPubText:'ทุกการแก้ไขบันทึกอัตโนมัติ ทุกเครื่องเห็นทันที ไม่ต้องอัปโหลดไฟล์', ssoBackup:'⬇️ ดาวน์โหลดสำรอง',
+});
+
 function detectLang(){
   const saved = lsGet(LS_LANG);
   if (I18N[saved]) return saved;
@@ -347,6 +371,36 @@ let tab = 'perm';        // perm | apps | users | news | publish
 let q = '';
 let srvFilter = 'all';   // all | external | factory
 
+/* ---------------- SSO mode ----------------
+   When sso.json ({"url": "<Apps Script /exec URL>"}) exists next to this file, users, apps and
+   permissions live on the CPS SSO server (see sso/Code.gs) instead of config.json:
+   real server-side login, settings saved automatically, and one-click sign-in to other apps. */
+const LS_SSO = 'cpsPortal.sso';            // session token (also read by sso-gate.js in other apps)
+let SSO_URL = '', ssoUser = null, ssoNeedsSetup = false, ssoError = '';
+async function sso(action, data = {}){
+  const r = await fetch(SSO_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...data})});
+  const j = await r.json();
+  if (!j.ok){ const e = new Error(j.message || j.code); e.code = j.code; throw e; }
+  return j.data;
+}
+const ssoMsg = e => ({BAD_LOGIN:T('loginErr'), LOCKED:T('ssoLocked'), AUTH:T('ssoExpired'), FORBIDDEN:T('ssoForbidden')})[e.code] || e.message || String(e);
+function ssoApply(d){
+  if (d.token) lsSet(LS_SSO, d.token);
+  cfg = {apps: d.apps, news: d.news || [], users: d.users || [d.user], rev: d.rev, updatedAt: 0};
+  ssoUser = d.user.username; ssoNeedsSetup = false;
+}
+function ssoSignOut(){ lsSet(LS_SSO, null); ssoUser = null; cfg = {apps:[], users:[], news:[]}; }
+// after signing in from another app's gate (…/cps-portal/?next=<url>) go back to that app
+function ssoNext(){
+  const n = new URLSearchParams(location.search).get('next');
+  try { const u = new URL(n, location.href); if (n && u.origin === location.origin){ location.replace(u.href); return true; } } catch {}
+  return false;
+}
+function insertParam(url, k, v){
+  const i = url.indexOf('#'), base = i < 0 ? url : url.slice(0, i), hash = i < 0 ? '' : url.slice(i);
+  return base + (base.includes('?') ? '&' : '?') + k + '=' + encodeURIComponent(v) + hash;
+}
+
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
@@ -369,6 +423,23 @@ async function makeCred(pw){
 const validCfg = c => c && Array.isArray(c.apps) && Array.isArray(c.users);
 
 async function loadCfg(){
+  try {
+    const r = await fetch('sso.json?_=' + Date.now(), {cache:'no-store'});
+    const j = r.ok ? await r.json() : null;
+    if (j && /^https?:\/\//.test(j.url || '')) SSO_URL = j.url;
+  } catch {}
+  if (SSO_URL){
+    cfg = {apps:[], users:[], news:[]}; ssoError = '';
+    try {
+      const token = lsGet(LS_SSO);
+      if (token){
+        try { ssoApply(await sso('me', {token})); if (ssoNext()) return; }
+        catch (e){ if (e.code === 'AUTH') lsSet(LS_SSO, null); else throw e; }
+      }
+      if (!ssoUser) ssoNeedsSetup = (await sso('status')).setup;
+    } catch (e){ ssoError = e.message || String(e); }
+    return;
+  }
   let local = null, remote = null;
   try { local = JSON.parse(localStorage.getItem(LS_CFG)); } catch {}
   try {
@@ -382,6 +453,12 @@ async function loadCfg(){
       : (local || remote || {apps: structuredClone(DEFAULT_APPS), users: [], updatedAt: 0});
 }
 function saveCfg(){
+  if (SSO_URL){                          // saved on the server, batched so quick ticks become one request
+    clearTimeout(ghTimer);
+    ghState = {status:'pending'};
+    ghTimer = setTimeout(ssoSave, 1200);
+    return;
+  }
   cfg.updatedAt = Date.now();
   try { localStorage.setItem(LS_CFG, JSON.stringify(cfg)); } catch {}
   if (isAdmin(me) && ghToken()){        // auto-upload, batched so quick ticks become one commit
@@ -439,8 +516,35 @@ async function ghPublish(){
   if (ghAgain || ghState.status === 'pending'){ ghAgain = false; ghTimer = setTimeout(ghPublish, 300); }
   showGh();
 }
+async function ssoSave(){
+  clearTimeout(ghTimer);
+  if (ghBusy){ ghAgain = true; return; }
+  ghBusy = true; ghState = {status:'saving'}; showGh();
+  const sent = cfg.users.map(u => u.pw);
+  try {
+    const d = await sso('save', {token: lsGet(LS_SSO), rev: cfg.rev, apps: cfg.apps, news: cfg.news || [],
+      users: cfg.users.map(u => ({username:u.username, name:u.name, role:u.role, apps:u.apps || [], roles:u.roles || {}, pw:u.pw}))});
+    cfg.rev = d.rev;
+    cfg.users.forEach((u, i) => { if (u.pw === sent[i]) delete u.pw; });
+    ghState = {status: ghAgain ? 'pending' : 'ok'};
+  } catch (e){
+    if (e.code === 'CONFLICT' || e.code === 'AUTH'){      // someone else saved / signed out: reload from server
+      ghBusy = false; ghAgain = false; ghState = {status:'error', msg: ssoMsg(e)};
+      ssoUser = null; await loadCfg(); return render();
+    }
+    ghState = {status:'error', msg: ssoMsg(e)};
+  }
+  ghBusy = false;
+  if (ghAgain){ ghAgain = false; ghTimer = setTimeout(ssoSave, 300); }
+  showGh();
+}
 function ghInner(){
   const s = ghState.status;
+  if (SSO_URL){
+    if (s === 'saving' || s === 'pending') return `<span>${T('ssoSaving')}</span>`;
+    if (s === 'error') return `<span>${T('ssoSaveErr', esc(ghState.msg))}</span><button class="btn small" data-act="sso-save">${T('ghRetry')}</button>`;
+    return s === 'ok' ? `<span>${T('ssoSaved')}</span>` : '';
+  }
   if (s === 'saving') return `<span>${T('ghSaving')}</span>`;
   if (s === 'error') return `<span>${T('ghErr', esc(ghState.msg))}</span><button class="btn small" data-act="gh-publish">${T('ghRetry')}</button>`;
   if (s === 'ok') return `<span>${T('ghOk')}</span>`;
@@ -457,14 +561,15 @@ async function ghConnect(token){
 }
 const isAdmin = u => u?.role === 'admin';
 const myApps = () => cfg.apps.filter(a => isAdmin(me) || (me.apps||[]).includes(a.id));
-const unpublished = () => cfg.users.length && (cfg.updatedAt||0) > remoteAt;
+const unpublished = () => !SSO_URL && cfg.users.length && (cfg.updatedAt||0) > remoteAt;
 
 /* ---------------- render ---------------- */
 function render(){
   applyLang();
-  const name = currentUserName();
+  if (SSO_URL && ssoError) return renderSsoError();
+  const name = SSO_URL ? ssoUser : currentUserName();
   me = cfg.users.find(u => u.username === name) || null;
-  if (!cfg.users.length) return renderSetup();
+  if (SSO_URL ? ssoNeedsSetup : !cfg.users.length) return renderSetup();
   if (!me) return renderLogin();
   if (view === 'settings' && !isAdmin(me)) view = 'portal';
   $('#root').innerHTML = `
@@ -483,9 +588,16 @@ function render(){
       </div>
       <div class="flow"><span>📅 Plan</span><span>📄 Standard</span><span>📊 Analyze</span><span>📈 Improve</span><span>✅ Follow up</span></div>
     </div></header>
-    <main>${view === 'settings' ? settingsHtml() : (!isAdmin(me) ? '' : ghToken() ? ghBarHtml() : unpublished()
+    <main>${view === 'settings' ? settingsHtml() : (!isAdmin(me) ? '' : (SSO_URL || ghToken()) ? ghBarHtml() : unpublished()
       ? `<div class="banner"><span>${T('bannerPortal')}</span>
          <button class="btn small" data-act="export">${T('download')}</button></div>` : '') + portalHtml()}</main>`;
+}
+
+function renderSsoError(){
+  $('#root').innerHTML = `<div class="auth"><div class="box">${langSwitch()}
+    <img class="appicon" src="icon.webp" alt="CPS Digital Platform"><h1>CPS Digital Platform</h1>
+    <p>${T('ssoDown')}</p><div class="err">${esc(ssoError)}</div>
+    <button class="btn primary" data-act="sso-reload">${T('ghRetry')}</button></div></div>`;
 }
 
 function renderSetup(){
@@ -505,6 +617,16 @@ function renderSetup(){
     e.preventDefault();
     const f = e.target, u = f.u.value.trim();
     if (f.p.value !== f.p2.value) return $('#err').textContent = T('pwMismatch');
+    if (SSO_URL){
+      const btn = f.querySelector('button.primary'); btn.disabled = true; $('#err').textContent = T('ssoWait');
+      try {
+        let old = null; try { const r = await fetch('config.json?_=' + Date.now(), {cache:'no-store'}); if (r.ok) old = await r.json(); } catch {}
+        const apps = (validCfg(old) ? old.apps : structuredClone(DEFAULT_APPS)).map(a => ({...a, server: serverOf(a)}));
+        ssoApply(await sso('setup', {username:u, name:cleanName(f.n.value) || u, password:f.p.value, remember:true, apps, news: old?.news || []}));
+        view = 'settings'; tab = 'users'; render();
+      } catch (x){ $('#err').textContent = ssoMsg(x); btn.disabled = false; }
+      return;
+    }
     cfg.users.push({username:u, name:cleanName(f.n.value) || u, role:'admin', apps:[], ...(await makeCred(f.p.value))});
     saveCfg(); sessionStorage.setItem(SS_ME, u); view = 'settings'; tab = 'users'; render();
   };
@@ -531,6 +653,16 @@ function renderLogin(){
   lf.onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
+    if (SSO_URL){
+      const btn = f.querySelector('button.primary'); btn.disabled = true; $('#err').textContent = T('ssoWait');
+      try {
+        ssoApply(await sso('login', {username:f.u.value.trim(), password:f.p.value, remember:f.r.checked}));
+        lsSet(LS_LASTUSER, ssoUser);
+        if (ssoNext()) return;
+        view = 'portal'; q = ''; render();
+      } catch (x){ $('#err').textContent = ssoMsg(x); btn.disabled = false; }
+      return;
+    }
     const u = cfg.users.find(x => x.username.toLowerCase() === f.u.value.trim().toLowerCase());
     if (!u || (await hashPw(f.p.value, u.salt)) !== u.hash) return $('#err').textContent = T('loginErr');
     lsSet(LS_LASTUSER, u.username);
@@ -549,7 +681,7 @@ function portalHtml(){
   const quick = list.filter(a => a.kind === 'quick');
   const news = cfg.news || [], dots = ['#3b9bff','#f5b83d','#5fd093','#ff8080'];
   const tile = a => `
-      <a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.url)}">
+      <a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.url)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}>
         <span class="ico">${esc(a.icon || '🔗')}</span>
         <span><b>${esc(a.name)}</b>${a.desc ? `<small>${esc(a.desc)}</small>` : ''}</span>
       </a>`;
@@ -565,7 +697,7 @@ function portalHtml(){
     : (quick.length ? '' : `<div class="empty">${all.length ? T('noMatch') : T('noApps')}</div>`)}
     ${quick.length || news.length ? `<div class="lower">
       ${quick.length ? `<section class="panel"><h3>${T('quick')}</h3><div class="quick">${quick.map(a => `
-        <a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.desc || a.url)}"><span>${esc(a.icon || '🔗')}</span>${esc(a.name)}</a>`).join('')}</div></section>` : ''}
+        <a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.desc || a.url)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span>${esc(a.icon || '🔗')}</span>${esc(a.name)}</a>`).join('')}</div></section>` : ''}
       ${news.length ? `<section class="panel"><h3>${T('news')}</h3><ul class="news">${news.map((n,i) => `<li style="--d:${dots[i % dots.length]}">${esc(n)}</li>`).join('')}</ul></section>` : ''}
     </div>` : ''}`;
 }
@@ -573,7 +705,7 @@ function portalHtml(){
 function settingsHtml(){
   const tabs = [['perm',T('tabPerm')],['apps',T('tabApps')],['users',T('tabUsers')],['news',T('tabNews')],['publish',T('tabPublish')]];
   return `
-    ${ghToken() ? ghBarHtml() : unpublished() ? `<div class="banner"><span>${T('bannerSettings')}</span>
+    ${(SSO_URL || ghToken()) ? ghBarHtml() : unpublished() ? `<div class="banner"><span>${T('bannerSettings')}</span>
       <button class="btn small" data-act="export">${T('download')}</button></div>` : ''}
     <div class="tabs">${tabs.map(([k,l]) => `<button class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}</div>
     <div class="panel">${({perm:permHtml, apps:appsHtml, users:usersHtml, news:newsHtml, publish:publishHtml})[tab]()}</div>`;
@@ -591,7 +723,10 @@ function permHtml(){
     <tr><th>${T('user')}</th>${cfg.apps.map(a => `<th class="app-col">${esc(a.icon||'')}<br>${esc(a.name)}<br><span title="${esc(srvLabel(serverOf(a)))}">${serverInfo(a).icon}</span></th>`).join('')}<th class="c">${T('all')}</th></tr>
     ${cfg.users.map(u => { const adm = isAdmin(u); const all = adm || cfg.apps.every(a => (u.apps||[]).includes(a.id)); return `
       <tr><td><b>${esc(dispName(u))}</b> ${adm?'<span class="tag admin">Admin</span>':''}<div class="url">${esc(u.username)}</div></td>
-      ${cfg.apps.map(a => `<td class="c"><input type="checkbox" data-perm="${esc(u.username)}|${esc(a.id)}" ${adm||(u.apps||[]).includes(a.id)?'checked':''} ${adm?'disabled':''} aria-label="${esc(u.username)} – ${esc(a.name)}"></td>`).join('')}
+      ${cfg.apps.map(a => { const has = (u.apps||[]).includes(a.id), label = `aria-label="${esc(u.username)} – ${esc(a.name)}"`;
+        if (!(a.roles||[]).length) return `<td class="c"><input type="checkbox" data-perm="${esc(u.username)}|${esc(a.id)}" ${adm||has?'checked':''} ${adm?'disabled':''} ${label}></td>`;
+        const cur = (u.roles||{})[a.id] || (adm ? a.roles[0] : has ? a.roles[a.roles.length-1] : '');
+        return `<td class="c"><select class="rolesel" data-role="${esc(u.username)}|${esc(a.id)}" ${label}>${adm ? '' : `<option value="">${T('roleNone')}</option>`}${a.roles.map(r => `<option ${r===cur?'selected':''}>${esc(r)}</option>`).join('')}</select></td>`; }).join('')}
       <td class="c"><input type="checkbox" data-permall="${esc(u.username)}" ${all?'checked':''} ${adm?'disabled':''} aria-label="${esc(T('all'))}"></td></tr>`; }).join('')}
   </table></div>
   <p class="hint">${T('permHint')}</p>`;
@@ -628,6 +763,8 @@ function usersHtml(){
 }
 
 function publishHtml(){
+  if (SSO_URL) return `<h3 style="margin-top:0">${T('ssoPubTitle')}</h3><p>${T('ssoPubText')}</p>
+    <button class="btn" data-act="export">${T('ssoBackup')}</button>`;
   const repo = `${GH.owner}/${GH.repo}`;
   const gh = ghToken()
     ? `<p>${T('ghOn', esc(repo))}</p>
@@ -676,12 +813,15 @@ function appDlg(i){
     <label>${T('desc')}</label><input type="text" name="desc" value="${esc(a.desc)}">
     <label>${T('serverType')}</label><select name="server">${SERVERS.map(s => `<option value="${s.id}" ${(i == null ? 'external' : serverOf(a)) === s.id ? 'selected' : ''}>${s.icon} ${srvLabel(s.id)} — ${srvHint(s.id)}</option>`).join('')}</select>
     <label>${T('position')}</label><select name="kind"><option value="tile">${T('posTile')}</option><option value="quick" ${a.kind==='quick'?'selected':''}>${T('posQuick')}</option></select>
+    ${SSO_URL ? `<label>${T('appSso')}</label><select name="sso"><option value="">${T('ssoModeOff')}</option><option value="ticket" ${a.sso==='ticket'?'selected':''}>${T('ssoModeTicket')}</option></select>
+    <label>${T('appRoles')}</label><input type="text" name="roles" placeholder="admin, auditor, viewer" value="${esc((a.roles||[]).join(', '))}">` : ''}
     <div class="row"><div><label>${T('icon')}</label><select name="icon">${[...new Set([a.icon, ...ICONS])].filter(Boolean).map(x => `<option ${x===a.icon?'selected':''}>${x}</option>`).join('')}</select></div>
     <div><label>${T('color')}</label><input type="color" name="color" value="${esc(a.color||COLORS[0])}" style="width:100%;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--card)"></div></div>`,
   f => {
     const url = f.url.value.trim();
     if (!/^https?:\/\//i.test(url)) return T('urlErr');
     const data = {name:f.name.value.trim(), url, desc:f.desc.value.trim(), kind:f.kind.value, server:f.server.value, icon:f.icon.value, color:f.color.value};
+    if (SSO_URL){ data.sso = f.sso.value; data.roles = f.roles.value.split(',').map(x => x.trim()).filter(Boolean); }
     if (i == null){
       let id = slug(data.name), n = 2;
       while (cfg.apps.some(x => x.id === id)) id = slug(data.name) + '-' + n++;
@@ -709,7 +849,7 @@ function userDlg(i){
     const username = f.u.value.trim(), role = f.role.value;
     if (isNew && cfg.users.some(x => x.username.toLowerCase() === username.toLowerCase())) return T('userExists');
     if (!isNew && u.role === 'admin' && role !== 'admin' && cfg.users.filter(isAdmin).length === 1) return T('needAdmin');
-    const cred = f.p.value ? await makeCred(f.p.value) : {};
+    const cred = !f.p.value ? {} : SSO_URL ? {pw: f.p.value} : await makeCred(f.p.value);
     const name = cleanName(f.n.value) || username;
     if (isNew) cfg.users.push({username, name, role, apps:[], ...cred});
     else Object.assign(u, {name, role, ...cred});
@@ -729,6 +869,12 @@ function profileDlg(){
     const name = cleanName(f.n.value);
     if (!name) return T('needName');
     if (f.p.value && f.p.value !== f.p2.value) return T('pwMismatch');
+    if (SSO_URL){
+      try { const d = await sso('profile', {token: lsGet(LS_SSO), name, password: f.p.value || undefined});
+            lsSet(LS_SSO, d.token); me.name = d.user.name; cfg.rev = d.rev; }
+      catch (x){ return ssoMsg(x); }
+      return;
+    }
     const remembered = (() => { try { return JSON.parse(lsGet(LS_REMEMBER))?.u === me.username; } catch { return false; } })();
     Object.assign(me, {name}, f.p.value ? await makeCred(f.p.value) : {});
     if (remembered) rememberLogin(me);
@@ -737,16 +883,33 @@ function profileDlg(){
 }
 
 /* ---------------- events ---------------- */
+// SSO apps: open a tab right away (keeps pop-up blockers happy), then send it to the app with a 2-minute ticket
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-ticket]');
+  if (!a || !SSO_URL || e.defaultPrevented) return;
+  e.preventDefault();
+  const w = window.open('', '_blank');
+  if (w) w.document.write(`<body style="margin:0;display:grid;place-items:center;height:100vh;background:#06132b;color:#eaf1ff;font:16px 'Segoe UI',sans-serif">${esc(T('ssoOpening'))}</body>`);
+  sso('ticket', {token: lsGet(LS_SSO), app: a.dataset.ticket}).then(d => {
+    const url = insertParam(a.href, 'sso', d.ticket);
+    if (w) w.location.replace(url); else location.href = url;
+  }).catch(x => {
+    if (w) w.close();
+    if (x.code === 'AUTH'){ ssoSignOut(); return loadCfg().then(render); }
+    alert(ssoMsg(x));
+  });
+});
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-tab],[data-act],[data-srv],[data-lang]');
   if (!t) return;
   if (t.dataset.lang){ lang = t.dataset.lang; lsSet(LS_LANG, lang); return render(); }
+  if (t.dataset.act === 'sso-reload') return loadCfg().then(render);
   if (t.dataset.tab){ tab = t.dataset.tab; return render(); }
   if (t.dataset.srv){ srvFilter = t.dataset.srv; return render(); }
   const i = t.dataset.i != null ? +t.dataset.i : null;
   const admin = isAdmin(me);
   switch (t.dataset.act){
-    case 'logout': sessionStorage.removeItem(SS_ME); forgetLogin(); view = 'portal'; return render();
+    case 'logout': sessionStorage.removeItem(SS_ME); forgetLogin(); if (SSO_URL) ssoSignOut(); view = 'portal'; return render();
     case 'profile': return profileDlg();
     case 'go-portal': view = 'portal'; return render();
     case 'go-settings': if (admin){ view = 'settings'; render(); } return;
@@ -772,10 +935,11 @@ document.addEventListener('click', e => {
     case 'export': {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([JSON.stringify(cfg, null, 2)], {type:'application/json'}));
-      a.download = 'config.json'; a.click(); URL.revokeObjectURL(a.href); return;
+      a.download = SSO_URL ? 'cps-portal-backup.json' : 'config.json'; a.click(); URL.revokeObjectURL(a.href); return;
     }
     case 'import': return $('#importFile').click();
     case 'gh-publish': return ghPublish();
+    case 'sso-save': return ssoSave();
     case 'gh-disconnect': lsSet(LS_GHTOKEN, null); ghState = {status:'idle'}; return render();
     case 'reset-local':
       if (!confirm(T('confirmReset'))) return;
@@ -795,6 +959,13 @@ document.addEventListener('change', e => {
   if (!isAdmin(me)) return;
   if (t.id === 'newsBox'){
     cfg.news = t.value.split('\n').map(s => s.trim()).filter(Boolean); saveCfg(); return render();
+  }
+  if (t.dataset.role){
+    const [un, id] = t.dataset.role.split('|');
+    const u = cfg.users.find(x => x.username === un); if (!u) return;
+    const s = new Set(u.apps || []); u.roles = u.roles || {};
+    if (t.value){ s.add(id); u.roles[id] = t.value; } else { s.delete(id); delete u.roles[id]; }
+    u.apps = [...s]; saveCfg(); return render();
   }
   if (t.dataset.perm){
     const [un, id] = t.dataset.perm.split('|');

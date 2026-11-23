@@ -19,7 +19,7 @@
       "server": "external"
     },
     {
-      "id": "local-8090",
+      "id": "ie-digital-program-admin",
       "name": "IE Digital Program (Admin)",
       "url": "https://changan-cps.github.io/IE-Digital-Program/admin.html",
       "desc": "IE 数字化管理 · IE Digital admin",
@@ -34,7 +34,16 @@
       "url": "https://changan-cps.github.io/cps-pjo-audit/",
       "desc": "PJO 审核 · PJO audit",
       "icon": "📋",
-      "color": "#c2571a"
+      "color": "#c2571a",
+      "roles": [
+        "admin",
+        "auditor",
+        "tlgl",
+        "verifier",
+        "issue_owner",
+        "employee",
+        "viewer"
+      ]
     },
     {
       "id": "cps-digital-platform",
@@ -54,7 +63,13 @@
       "kind": "tile",
       "server": "external",
       "icon": "📈",
-      "color": "#2a7f8f"
+      "color": "#2a7f8f",
+      "roles": [
+        "ADMIN",
+        "AUDITOR",
+        "WORKSHOP_OWNER",
+        "VIEWER"
+      ]
     },
     {
       "id": "ie-digital-program",
@@ -107,5 +122,5 @@
       "hash": "09e047fb46a6c265615d5f7ed670c13a4b27c2f1389925d8c8daba58cace3235"
     }
   ],
-  "updatedAt": 1795410000000
+  "updatedAt": 1795410001000
 }
