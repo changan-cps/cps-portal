@@ -48,7 +48,7 @@
     },
     {
       "id": "cps-health-check",
-      "name": "CPS Health Check",
+      "name": "CPS AI Audit",
       "url": "https://changan-cps.github.io/Healthcheck/",
       "desc": "季度健康检查 · Quarterly health check",
       "kind": "tile",
@@ -107,5 +107,5 @@
       "hash": "09e047fb46a6c265615d5f7ed670c13a4b27c2f1389925d8c8daba58cace3235"
     }
   ],
-  "updatedAt": 1795409000000
+  "updatedAt": 1795409718231
 }
