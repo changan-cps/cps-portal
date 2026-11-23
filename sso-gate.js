@@ -1,83 +1,124 @@
-/* CPS SSO gate — makes a static app on changan-cps.github.io usable only through the CPS Digital Platform portal.
+/* CPS SSO gate — makes an app on changan-cps.github.io usable only through the CPS Digital Platform portal.
  *
  * Put this as the FIRST script in the app's <head>:
- *   <script src="/cps-portal/sso-gate.js" data-app="lean-quest"></script>
+ *   <script src="/cps-portal/sso-gate.js" data-app="ie-digital-program"></script>
  * data-app = the app's id in the portal (Settings ▸ Apps / Links).
  *
- * What it does: hides the page, asks the CPS SSO server whether the person signed in to the portal
- * may use this app, then shows the page — or sends them to the portal to sign in (and back afterwards).
- * Does nothing until the portal has SSO switched on (cps-portal/sso.json), so it is safe to ship early.
+ * Modes
+ *   (default)     Whole page: hidden until the CPS SSO server confirms the signed-in portal user may use the app;
+ *                 otherwise the visitor is sent to the portal to sign in (and back afterwards) or sees a lock page.
+ *   data-ticket   Launcher for an app on another origin (Apps Script): same check, but it also gets a 2-minute signed
+ *                 ticket → window.CPS_SSO = {ticket, at, renew()} and a "cps-sso" event on document.
+ *   data-manual   Only parts of the app are protected (e.g. Lean Quest: trainees play freely, facilitator views are
+ *                 locked). Nothing happens at load; the app calls
+ *                     CPS_GATE.require().then(function (ok) { if (ok) openTheProtectedView(); })
+ *                 CPS_GATE.ok is true once a check has passed.
  *
+ * Does nothing until the portal has SSO switched on (cps-portal/sso.json), so it is safe to ship early.
  * Note: this is a client-side lock on a public site. It stops ordinary visitors; it is not a substitute
  * for server-side checks on anything confidential.
  */
 (function () {
   'use strict';
   var script = document.currentScript, app = script.getAttribute('data-app');
-  // data-admin-app: a page whose admin view is "#admin" on the same file (Lean Quest) is checked as that app instead
+  // data-admin-app: a page whose admin view is "#admin" on the same file is checked as that app instead
   if (location.hash === '#admin' && script.getAttribute('data-admin-app')) app = script.getAttribute('data-admin-app');
+  var wantTicket = script.hasAttribute('data-ticket'), manual = script.hasAttribute('data-manual');
   var portal = new URL('.', script.src).href;                       // …/cps-portal/
   var TOKEN_KEY = 'cpsPortal.sso', OK_KEY = 'cpsGate.ok.' + app, OK_MS = 10 * 60 * 1000, GRACE_MS = 7 * 24 * 3600 * 1000;
-  var hide = document.createElement('style');
-  hide.textContent = 'html{visibility:hidden!important}';
-  document.documentElement.appendChild(hide);
+  var ssoUrl = '';
 
-  // data-ticket: this page is a launcher for an app on another origin (Apps Script). Instead of a yes/no check it
-  // gets a 2-minute signed ticket and announces it: window.CPS_SSO = {ticket} + a "cps-sso" event on document.
-  // CPS_SSO.renew() → Promise of a fresh ticket (tickets expire; ask again right before opening the app).
-  var wantTicket = script.hasAttribute('data-ticket'), ssoUrl = '';
-  function askTicket() {
-    return fetch(ssoUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'ticket', token: get(TOKEN_KEY), app: app }) })
-      .then(function (r) { return r.json(); }).then(function (j) { if (!j.ok && j.code === 'AUTH') toPortal(); return j.ok ? j.data.ticket : null; });
-  }
-  function show(ticket) {
-    if (hide.parentNode) hide.parentNode.removeChild(hide);
-    if (wantTicket && !window.CPS_SSO) {
-      window.CPS_SSO = { ticket: ticket || null, at: Date.now(),
-        renew: function () { return ssoUrl ? askTicket().catch(function () { return null; }) : Promise.resolve(null); } };
-      document.dispatchEvent(new CustomEvent('cps-sso'));
-    }
-  }
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  function last() { try { return JSON.parse(get(OK_KEY)) || {}; } catch (e) { return {}; } }
   function toPortal() { location.replace(portal + '?next=' + encodeURIComponent(location.href)); }
-  function block(title, text) {
+  function post(action) {
+    return fetch(ssoUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, token: get(TOKEN_KEY), app: app }) })
+      .then(function (r) { return r.json(); });
+  }
+
+  /** Resolves {status: 'ok' | 'off' | 'auth' | 'forbidden' | 'offline', ticket?}. 'off' = SSO not switched on. */
+  function check() {
+    var token = get(TOKEN_KEY), seen = last();
+    // checked a moment ago with this same sign-in: don't make every page load wait for the server
+    if (!wantTicket && token && seen.t === token && Date.now() - seen.at < OK_MS) return Promise.resolve({ status: 'ok' });
+    return fetch(portal + 'sso.json?_=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; }, function () { return undefined; })
+      .then(function (cfg) {
+        if (cfg === null || (cfg && !/^https?:\/\//.test(cfg.url || ''))) return { status: 'off' };
+        if (cfg === undefined) throw new Error('offline');
+        ssoUrl = cfg.url;
+        if (!token) return { status: 'auth' };
+        return post(wantTicket ? 'ticket' : 'check').then(function (j) {
+          if (j.ok) { set(OK_KEY, JSON.stringify({ t: token, at: Date.now() })); window.CPS_USER = j.data.user; return { status: 'ok', ticket: j.data.ticket }; }
+          if (j.code === 'AUTH') { try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ } return { status: 'auth' }; }
+          if (j.code === 'FORBIDDEN') return { status: 'forbidden' };
+          throw new Error(j.message || j.code);
+        });
+      })
+      .catch(function () {
+        // server unreachable: someone verified on this device in the last 7 days may keep working (e.g. flaky Wi-Fi on the line)
+        return { status: !wantTicket && token && seen.t === token && Date.now() - seen.at < GRACE_MS ? 'ok' : 'offline' };
+      });
+  }
+
+  var TEXT = {
+    forbidden: ['ไม่มีสิทธิ์ใช้ส่วนนี้ · No access', 'ติดต่อผู้ดูแลระบบเพื่อขอสิทธิ์ใน CPS Digital Platform · 请联系管理员开通权限'],
+    offline: ['เชื่อมต่อไม่ได้ · Cannot connect', 'ตรวจอินเทอร์เน็ตแล้วเปิดใหม่ผ่าน CPS Digital Platform · 请检查网络后重试']
+  };
+  /** Lock screen. replace=true takes over the page; otherwise it is an overlay that can be closed. */
+  function lock(kind, replace) {
     var draw = function () {
-      document.body.innerHTML = '<div style="position:fixed;inset:0;display:grid;place-items:center;background:#06132b;color:#eaf1ff;font:16px/1.6 \'Segoe UI\',sans-serif;text-align:center;padding:24px">' +
-        '<div><div style="font-size:44px">🔒</div><h1 style="font-size:22px;margin:8px 0"></h1><p style="margin:0 0 18px;opacity:.85"></p>' +
-        '<a style="display:inline-block;background:#3b9bff;color:#04122b;font-weight:700;padding:10px 22px;border-radius:8px;text-decoration:none">CPS Digital Platform</a></div></div>';
-      document.querySelector('h1').textContent = title; document.querySelector('p').textContent = text;
-      document.querySelector('a').href = portal;
-      wantTicket = false;          // blocked: no ticket, and the launcher must not start the app
-      show();
+      var box = document.createElement('div');
+      box.setAttribute('role', 'alertdialog');
+      box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#06132b;color:#eaf1ff;font:16px/1.6 "Segoe UI",sans-serif;text-align:center;padding:24px';
+      box.innerHTML = '<div><div style="font-size:44px">🔒</div><h1 style="font-size:22px;margin:8px 0;color:inherit"></h1><p style="margin:0 0 18px;opacity:.85"></p>' +
+        '<a style="display:inline-block;background:#3b9bff;color:#04122b;font-weight:700;padding:10px 22px;border-radius:8px;text-decoration:none">CPS Digital Platform</a>' +
+        (replace ? '' : ' <button type="button" style="margin-left:8px;background:none;border:1px solid #5b77a8;color:inherit;padding:10px 18px;border-radius:8px;font:inherit;cursor:pointer">ปิด · Close</button>') + '</div>';
+      box.querySelector('h1').textContent = TEXT[kind][0]; box.querySelector('p').textContent = TEXT[kind][1];
+      box.querySelector('a').href = portal;
+      if (replace) document.body.innerHTML = ''; else box.querySelector('button').onclick = function () { box.remove(); };
+      document.body.appendChild(box);
     };
     if (document.body) draw(); else document.addEventListener('DOMContentLoaded', draw);
   }
-  function last() { try { return JSON.parse(get(OK_KEY)) || {}; } catch (e) { return {}; } }
 
-  var token = get(TOKEN_KEY), seen = last();
-  // checked a moment ago with this same sign-in: don't make every page load wait for the server
-  if (!wantTicket && token && seen.t === token && Date.now() - seen.at < OK_MS) { show(); return; }
-
-  fetch(portal + 'sso.json?_=' + Date.now(), { cache: 'no-store' })
-    .then(function (r) { return r.ok ? r.json() : null; }, function () { return undefined; })
-    .then(function (cfg) {
-      if (cfg === null || (cfg && !/^https?:\/\//.test(cfg.url || ''))) { show(); return; }     // SSO not switched on yet
-      if (cfg === undefined) throw new Error('offline');
-      ssoUrl = cfg.url;
-      if (!token) { toPortal(); return; }
-      return fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: wantTicket ? 'ticket' : 'check', token: token, app: app }) })
-        .then(function (r) { return r.json(); })
-        .then(function (j) {
-          if (j.ok) { set(OK_KEY, JSON.stringify({ t: token, at: Date.now() })); window.CPS_USER = j.data.user; show(j.data.ticket); }
-          else if (j.code === 'AUTH') { try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ } toPortal(); }
-          else if (j.code === 'FORBIDDEN') block('ไม่มีสิทธิ์ใช้แอปนี้ · No access', 'ติดต่อผู้ดูแลระบบเพื่อขอสิทธิ์ใน CPS Digital Platform · 请联系管理员开通权限');
-          else throw new Error(j.message || j.code);
+  // ---------------------------------------------------------------- manual mode: the app decides what to protect
+  if (manual) {
+    var pending = null;
+    window.CPS_GATE = {
+      ok: false,
+      require: function () {
+        if (window.CPS_GATE.ok) return Promise.resolve(true);
+        if (!pending) pending = check().then(function (r) {
+          pending = null;
+          if (r.status === 'ok' || r.status === 'off') { window.CPS_GATE.ok = true; return true; }
+          if (r.status === 'auth') toPortal(); else lock(r.status, false);
+          return false;
         });
-    })
-    .catch(function () {
-      // server unreachable: someone verified on this device in the last 7 days may keep working (e.g. flaky Wi-Fi on the line)
-      if (!wantTicket && token && seen.t === token && Date.now() - seen.at < GRACE_MS) show();
-      else block('เชื่อมต่อไม่ได้ · Cannot connect', 'ตรวจอินเทอร์เน็ตแล้วเปิดใหม่ผ่าน CPS Digital Platform · 请检查网络后重试');
-    });
+        return pending;
+      }
+    };
+    return;
+  }
+
+  // ---------------------------------------------------------------- whole page (and launcher) mode
+  var hide = document.createElement('style');
+  hide.textContent = 'html{visibility:hidden!important}';
+  document.documentElement.appendChild(hide);
+  function show() { if (hide.parentNode) hide.parentNode.removeChild(hide); }
+
+  check().then(function (r) {
+    if (r.status === 'auth') { toPortal(); return; }
+    if (r.status === 'forbidden' || r.status === 'offline') { lock(r.status, true); show(); return; }
+    show();
+    if (wantTicket) {
+      // CPS_SSO.renew() → Promise of a fresh ticket (tickets expire; ask again right before opening the app)
+      window.CPS_SSO = { ticket: r.ticket || null, at: Date.now(), renew: function () {
+        if (!ssoUrl) return Promise.resolve(null);
+        return post('ticket').then(function (j) { if (!j.ok && j.code === 'AUTH') toPortal(); return j.ok ? j.data.ticket : null; }, function () { return null; });
+      } };
+      document.dispatchEvent(new CustomEvent('cps-sso'));
+    }
+  });
 })();
