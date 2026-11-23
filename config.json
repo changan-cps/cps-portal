@@ -4,7 +4,7 @@
       "id": "lean-quest",
       "name": "Lean Quest",
       "url": "https://changan-cps.github.io/lean-quest/",
-      "desc": "เกม/กิจกรรม Lean",
+      "desc": "精益游戏 · Lean game",
       "icon": "🎯",
       "color": "#0b5cad"
     },
@@ -12,7 +12,7 @@
       "id": "lean-quest-admin",
       "name": "Lean Quest (Admin)",
       "url": "https://changan-cps.github.io/lean-quest/index.html#admin",
-      "desc": "หน้าจัดการ Lean Quest",
+      "desc": "Lean Quest 管理 · Admin",
       "icon": "🛠️",
       "color": "#6b4bc4"
     },
@@ -20,7 +20,7 @@
       "id": "local-8090",
       "name": "Local App (8090)",
       "url": "http://localhost:8090/",
-      "desc": "แอปที่รันบนเครื่อง",
+      "desc": "本地应用 · Local app",
       "icon": "💻",
       "color": "#3d7a5a"
     },
@@ -28,7 +28,7 @@
       "id": "cps-pjo-audit",
       "name": "CPS PJO Audit",
       "url": "https://changan-cps.github.io/cps-pjo-audit/",
-      "desc": "ระบบตรวจ PJO",
+      "desc": "PJO 审核 · PJO audit",
       "icon": "📋",
       "color": "#c2571a"
     }

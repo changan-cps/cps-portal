@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,7 +21,7 @@
   --shadow:0 2px 10px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(1200px 500px at 80% -10%,#12408f 0%,transparent 60%),var(--bg);background-attachment:fixed;color:var(--ink);font:15px/1.5 "Segoe UI","Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif}
+body{margin:0;min-height:100vh;background:radial-gradient(1200px 500px at 80% -10%,#12408f 0%,transparent 60%),var(--bg);background-attachment:fixed;color:var(--ink);font:15px/1.5 "Segoe UI","Leelawadee UI","Noto Sans Thai","Microsoft YaHei","PingFang SC","Noto Sans SC",Tahoma,sans-serif}
 button,input,select{font:inherit;color:inherit}
 .btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}
 .btn:hover{border-color:var(--brand)}
@@ -31,6 +31,10 @@ button,input,select{font:inherit;color:inherit}
 input[type=text],input[type=password],input[type=url],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
 input:focus,select:focus,.btn:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+.lang{display:inline-flex;border:1px solid rgba(255,255,255,.25);border-radius:99px;overflow:hidden;background:rgba(4,18,43,.45)}
+.lang button{border:0;background:none;color:inherit;padding:6px 11px;cursor:pointer;font-size:13px;opacity:.75}
+.lang button.on{background:var(--brand);color:var(--brand-ink);font-weight:700;opacity:1}
+.auth .lang{display:flex;width:max-content;margin:-8px -8px 10px auto}
 label.check{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--ink);font-size:14px;cursor:pointer}
 .err{color:var(--danger);font-size:13px;min-height:20px;margin-top:8px}
 
@@ -136,18 +140,133 @@ dialog h3{margin:0 0 4px}
 
 <script>
 /* =========================================================
-   CPS App Portal — หน้าเดียวจบ ไม่ต้องมี server
-   ข้อมูล (แอป / ผู้ใช้ / สิทธิ์) เก็บใน config.json ข้างไฟล์นี้
-   และ localStorage ของเบราว์เซอร์ (ฉบับที่แก้ล่าสุดจะถูกใช้)
+   CPS Digital Platform — single page, no server needed.
+   Data (apps / users / permissions) lives in config.json next to this
+   file plus this browser's localStorage (newest copy wins).
+   UI languages: 中文 / English / ไทย
    ========================================================= */
 const LS_CFG = 'cpsPortal.cfg', SS_ME = 'cpsPortal.me';
-const LS_REMEMBER = 'cpsPortal.remember', LS_LASTUSER = 'cpsPortal.lastUser';
+const LS_REMEMBER = 'cpsPortal.remember', LS_LASTUSER = 'cpsPortal.lastUser', LS_LANG = 'cpsPortal.lang';
 
-/* --- จดจำการเข้าสู่ระบบในเครื่องนี้ ---
-   ไม่ได้เก็บรหัสผ่าน: เก็บแค่ชื่อผู้ใช้ + hash ปัจจุบันของผู้ใช้นั้น
-   ถ้า Admin รีเซ็ตรหัส / ลบผู้ใช้ hash จะไม่ตรง -> ต้อง login ใหม่อัตโนมัติ */
 const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
 const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+
+/* ---------------- i18n ---------------- */
+const LANGS = [['zh','中文'], ['en','EN'], ['th','ไทย']];
+const I18N = {
+  zh: {
+    search:'🔍 搜索…', searchAria:'搜索应用', settings:'⚙️ 权限设置', back:'← 返回菜单', editProfile:'修改显示名称 / 密码', logout:'退出登录',
+    bannerPortal:'⚠️ 本设备有尚未发布的修改 — 手机和其他设备仍显示旧的应用和权限，需将 <b>config.json</b> 上传到 GitHub 后才会更新',
+    bannerSettings:'⚠️ 修改仅保存在当前浏览器 — 请下载 <b>config.json</b> 并上传到网站，其他设备才能看到',
+    download:'⬇️ 下载 config.json',
+    setupTitle:'首次设置', setupSub:'系统中还没有用户 — 请先创建管理员 (Admin) 账号',
+    username:'用户名', displayName:'显示名称', password:'密码', pwMin:'密码 (至少 6 位)', pwConfirm:'确认密码',
+    createAdmin:'创建管理员账号', pwMismatch:'两次输入的密码不一致',
+    loginSub:'登录后查看您有权限使用的应用', remember:'在此设备上记住登录', login:'登录', loginErr:'用户名或密码错误',
+    all:'全部', nApps:n => `${n} 个应用`, noMatch:'没有找到匹配的应用', noApps:'您还没有任何应用的使用权限<br>请联系管理员',
+    quick:'⚡ 快捷入口', news:'📣 公告',
+    tabPerm:'🔐 权限', tabApps:'🧩 应用 / 链接', tabUsers:'👤 用户', tabNews:'📣 公告', tabPublish:'☁️ 发布 / 备份',
+    newsTitle:'公告 (Announcement)', newsPh:'每行输入一条公告', newsHint:'每行一条 — 离开输入框时自动保存 · 所有用户看到相同的公告',
+    noAppsYet:'还没有应用 — 请在“应用 / 链接”中添加', user:'用户', permHint:'勾选即授权 — 立即保存 · 管理员始终可见全部应用',
+    apps:'应用 / 链接', addApp:'+ 添加应用', name:'名称', serverType:'服务器类型', link:'链接', moveUp:'上移', moveDown:'下移', edit:'编辑', del:'删除',
+    users:'用户', addUser:'+ 添加用户', role:'角色', appCount:'应用数', editReset:'编辑 / 重置密码',
+    pubTitle:'发布到所有设备',
+    pubSteps:['点击 <b>下载 config.json</b>', '将文件上传到 GitHub 上 Portal 的 <code>index.html</code> 同一目录 (覆盖旧文件)', '等待 GitHub Pages 更新约 1 分钟，所有用户即可获得新的应用和权限'],
+    importCfg:'⬆️ 导入 config.json', resetLocal:'清除本浏览器数据',
+    pubHint:'密码以单向加密 (PBKDF2) 保存，不保存明文<br>注意：本门户只控制“可见的菜单” — 知道应用链接的人仍可直接打开，如需真正限制，各应用需自带登录',
+    cancel:'取消', save:'保存',
+    addAppT:'添加应用', editAppT:'编辑应用', appName:'应用名称', url:'链接 (URL)', desc:'说明', position:'显示位置',
+    posTile:'主磁贴', posQuick:'快捷入口 (下方小图标)', icon:'图标', color:'颜色', urlErr:'链接必须以 http:// 或 https:// 开头',
+    addUserT:'添加用户', editUserT:'编辑用户', roleUser:'User — 只能看到已授权的应用', roleAdmin:'Admin — 可见全部应用并可设置',
+    pwNew:'新密码 (留空 = 不修改)', userExists:'用户名已存在', needAdmin:'至少需要 1 名管理员',
+    profile:'我的资料', usernameRO:'用户名 (用于登录 — 不可修改)', pwNewConfirm:'确认新密码',
+    profileHint:'如在多台设备使用，请通知管理员更新 config.json，否则其他设备仍显示旧名称', needName:'请输入显示名称',
+    confirmDelApp:n => `删除应用 “${n}” ？`, confirmDelUser:n => `删除用户 “${n}” ？`, confirmReset:'清除本浏览器中的修改，恢复使用网站上的 config.json ？',
+    badFile:'文件无效 (需要 apps、users 且至少 1 名管理员)', install:'安装应用',
+    srv:{external:['External Server · 外网服务器','可通过互联网随时访问'], factory:['Factory Server · 工厂服务器','仅限工厂内部网络访问']},
+  },
+  en: {
+    search:'🔍 Search…', searchAria:'Search apps', settings:'⚙️ Permission settings', back:'← Back to menu', editProfile:'Edit display name / password', logout:'Log out',
+    bannerPortal:'⚠️ This device has unpublished changes — phones and other devices still see the old apps and permissions until <b>config.json</b> is uploaded to GitHub',
+    bannerSettings:'⚠️ Changes are only saved in this browser — download <b>config.json</b> and upload it to the site so other devices can see them',
+    download:'⬇️ Download config.json',
+    setupTitle:'First-time setup', setupSub:'No users yet — create an administrator (Admin) account first',
+    username:'Username', displayName:'Display name', password:'Password', pwMin:'Password (at least 6 characters)', pwConfirm:'Confirm password',
+    createAdmin:'Create Admin account', pwMismatch:'Passwords do not match',
+    loginSub:'Sign in to see the apps you have access to', remember:'Remember me on this device', login:'Sign in', loginErr:'Incorrect username or password',
+    all:'All', nApps:n => `${n} app${n === 1 ? '' : 's'}`, noMatch:'No apps match your search', noApps:'You do not have access to any apps yet<br>Please contact the administrator',
+    quick:'⚡ Quick Access', news:'📣 Announcement',
+    tabPerm:'🔐 Permissions', tabApps:'🧩 Apps / Links', tabUsers:'👤 Users', tabNews:'📣 Announcements', tabPublish:'☁️ Publish / Backup',
+    newsTitle:'Announcements', newsPh:'One announcement per line', newsHint:'One per line — saved automatically when you leave the box · everyone sees the same announcements',
+    noAppsYet:'No apps yet — add some under “Apps / Links”', user:'User', permHint:'Tick to grant access — saved instantly · Admins always see every app',
+    apps:'Apps / Links', addApp:'+ Add app', name:'Name', serverType:'Server type', link:'Link', moveUp:'Move up', moveDown:'Move down', edit:'Edit', del:'Delete',
+    users:'Users', addUser:'+ Add user', role:'Role', appCount:'Apps', editReset:'Edit / reset password',
+    pubTitle:'Publish to every device',
+    pubSteps:['Click <b>Download config.json</b>', 'Upload it to the same folder as the portal’s <code>index.html</code> on GitHub (replace the old file)', 'Wait ~1 minute for GitHub Pages — everyone then gets the new apps and permissions'],
+    importCfg:'⬆️ Import config.json', resetLocal:'Clear data in this browser',
+    pubHint:'Passwords are stored one-way hashed (PBKDF2), never as plain text<br>Note: the portal only controls which menu items are visible — anyone with an app’s direct link can still open it. Each app needs its own login for real protection.',
+    cancel:'Cancel', save:'Save',
+    addAppT:'Add app', editAppT:'Edit app', appName:'App name', url:'Link (URL)', desc:'Description', position:'Position',
+    posTile:'Main tile', posQuick:'Quick Access (small icon below)', icon:'Icon', color:'Color', urlErr:'Link must start with http:// or https://',
+    addUserT:'Add user', editUserT:'Edit user', roleUser:'User — sees only granted apps', roleAdmin:'Admin — sees every app + can change settings',
+    pwNew:'New password (leave blank = keep)', userExists:'That username already exists', needAdmin:'There must be at least 1 Admin',
+    profile:'My profile', usernameRO:'Username (for login — cannot change)', pwNewConfirm:'Confirm new password',
+    profileHint:'If you use several devices, ask an Admin to update config.json, otherwise other devices keep the old name', needName:'Please enter a display name',
+    confirmDelApp:n => `Delete app “${n}”?`, confirmDelUser:n => `Delete user “${n}”?`, confirmReset:'Clear the changes in this browser and go back to the config.json on the site?',
+    badFile:'Invalid file (needs apps, users and at least 1 Admin)', install:'Install app',
+    srv:{external:['External Server','Available anywhere over the internet'], factory:['Factory Server','Only inside the factory network']},
+  },
+  th: {
+    search:'🔍 ค้นหา…', searchAria:'ค้นหาแอป', settings:'⚙️ ตั้งค่า Permission', back:'← กลับหน้าเมนู', editProfile:'แก้ไขชื่อที่แสดง / รหัสผ่าน', logout:'ออกจากระบบ',
+    bannerPortal:'⚠️ เครื่องนี้มีการแก้ไขที่ยังไม่ได้เผยแพร่ — มือถือ/เครื่องอื่นจะยังเห็นแอปและสิทธิ์ชุดเดิม จนกว่าจะอัปโหลด <b>config.json</b> ขึ้น GitHub',
+    bannerSettings:'⚠️ มีการแก้ไขที่ยังอยู่แค่ในเบราว์เซอร์นี้ — ต้องดาวน์โหลด <b>config.json</b> แล้วอัปโหลดขึ้นเว็บ ผู้ใช้เครื่องอื่นจึงจะเห็น',
+    download:'⬇️ ดาวน์โหลด config.json',
+    setupTitle:'ตั้งค่าครั้งแรก', setupSub:'ยังไม่มีผู้ใช้ในระบบ — สร้างบัญชีผู้ดูแล (Admin) ก่อน',
+    username:'ชื่อผู้ใช้', displayName:'ชื่อที่แสดง', password:'รหัสผ่าน', pwMin:'รหัสผ่าน (อย่างน้อย 6 ตัว)', pwConfirm:'ยืนยันรหัสผ่าน',
+    createAdmin:'สร้างบัญชี Admin', pwMismatch:'รหัสผ่านไม่ตรงกัน',
+    loginSub:'เข้าสู่ระบบเพื่อดูแอปที่คุณมีสิทธิ์ใช้งาน', remember:'จดจำการเข้าสู่ระบบในเครื่องนี้', login:'เข้าสู่ระบบ', loginErr:'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+    all:'ทั้งหมด', nApps:n => `${n} แอป`, noMatch:'ไม่พบแอปที่ค้นหา', noApps:'คุณยังไม่ได้รับสิทธิ์ใช้งานแอปใด ๆ<br>กรุณาติดต่อผู้ดูแลระบบ',
+    quick:'⚡ Quick Access', news:'📣 ประกาศ',
+    tabPerm:'🔐 สิทธิ์ (Permission)', tabApps:'🧩 แอป / ลิงก์', tabUsers:'👤 ผู้ใช้', tabNews:'📣 ประกาศ', tabPublish:'☁️ เผยแพร่ / สำรอง',
+    newsTitle:'ประกาศ (Announcement)', newsPh:'พิมพ์ประกาศ บรรทัดละ 1 เรื่อง', newsHint:'บรรทัดละ 1 ประกาศ — บันทึกอัตโนมัติเมื่อคลิกออกจากช่อง · ผู้ใช้ทุกคนเห็นประกาศเหมือนกัน',
+    noAppsYet:'ยังไม่มีแอป — เพิ่มที่แท็บ "แอป / ลิงก์"', user:'ผู้ใช้', permHint:'ติ๊กเพื่อให้สิทธิ์ — บันทึกทันที · Admin เห็นทุกแอปเสมอ',
+    apps:'แอป / ลิงก์', addApp:'+ เพิ่มแอป', name:'ชื่อ', serverType:'ประเภท Server', link:'ลิงก์', moveUp:'เลื่อนขึ้น', moveDown:'เลื่อนลง', edit:'แก้ไข', del:'ลบ',
+    users:'ผู้ใช้', addUser:'+ เพิ่มผู้ใช้', role:'ระดับ', appCount:'จำนวนแอป', editReset:'แก้ไข / รีเซ็ตรหัส',
+    pubTitle:'เผยแพร่ให้ทุกเครื่องเห็น',
+    pubSteps:['กด <b>ดาวน์โหลด config.json</b>', 'อัปโหลดไฟล์ไปไว้โฟลเดอร์เดียวกับ <code>index.html</code> ของ Portal บน GitHub (ทับไฟล์เดิม)', 'รอ GitHub Pages อัปเดต ~1 นาที ผู้ใช้ทุกคนจะได้รายการแอปและสิทธิ์ชุดใหม่'],
+    importCfg:'⬆️ นำเข้า config.json', resetLocal:'ล้างข้อมูลในเบราว์เซอร์นี้',
+    pubHint:'รหัสผ่านถูกเก็บแบบเข้ารหัสทางเดียว (PBKDF2) ในไฟล์ ไม่ได้เก็บเป็นข้อความตรง ๆ<br>หมายเหตุ: Portal นี้ควบคุม "เมนูที่มองเห็น" เท่านั้น — ใครรู้ลิงก์ของแอปโดยตรงยังเปิดได้ ถ้าต้องการกันจริง ต้องมี login ในแต่ละแอปด้วย',
+    cancel:'ยกเลิก', save:'บันทึก',
+    addAppT:'เพิ่มแอป', editAppT:'แก้ไขแอป', appName:'ชื่อแอป', url:'ลิงก์ (URL)', desc:'คำอธิบาย', position:'ตำแหน่งที่แสดง',
+    posTile:'ไทล์หลัก', posQuick:'Quick Access (ไอคอนเล็กด้านล่าง)', icon:'ไอคอน', color:'สี', urlErr:'ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://',
+    addUserT:'เพิ่มผู้ใช้', editUserT:'แก้ไขผู้ใช้', roleUser:'User — เห็นเฉพาะแอปที่ได้รับสิทธิ์', roleAdmin:'Admin — เห็นทุกแอป + ตั้งค่าได้',
+    pwNew:'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)', userExists:'มีชื่อผู้ใช้นี้อยู่แล้ว', needAdmin:'ต้องมี Admin อย่างน้อย 1 คน',
+    profile:'โปรไฟล์ของฉัน', usernameRO:'ชื่อผู้ใช้ (ใช้ login — แก้ไม่ได้)', pwNewConfirm:'ยืนยันรหัสผ่านใหม่',
+    profileHint:'ถ้าใช้หลายเครื่อง แจ้ง Admin ให้อัปเดต config.json ด้วย ไม่งั้นเครื่องอื่นจะยังเห็นชื่อเดิม', needName:'กรุณาใส่ชื่อที่แสดง',
+    confirmDelApp:n => `ลบแอป "${n}" ?`, confirmDelUser:n => `ลบผู้ใช้ "${n}" ?`, confirmReset:'ล้างข้อมูลที่แก้ไขในเบราว์เซอร์นี้ แล้วกลับไปใช้ config.json บนเว็บ ?',
+    badFile:'ไฟล์ไม่ถูกต้อง (ต้องมี apps, users และ Admin อย่างน้อย 1 คน)', install:'ติดตั้งแอป',
+    srv:{external:['External Server','เปิดได้ทุกที่ผ่านอินเทอร์เน็ต'], factory:['Factory Server','เปิดได้เฉพาะในเครือข่ายโรงงาน']},
+  },
+};
+function detectLang(){
+  const saved = lsGet(LS_LANG);
+  if (I18N[saved]) return saved;
+  const nav = (navigator.languages || [navigator.language || '']).join(',').toLowerCase();
+  return /(^|,)zh/.test(nav) ? 'zh' : /(^|,)th/.test(nav) ? 'th' : 'en';
+}
+let lang = detectLang();
+const T = (k, ...a) => { const v = I18N[lang][k] ?? I18N.en[k]; return typeof v === 'function' ? v(...a) : v; };
+const langSwitch = () => `<div class="lang" role="group" aria-label="Language">${LANGS.map(([k,l]) =>
+  `<button type="button" class="${k === lang ? 'on' : ''}" data-lang="${k}" lang="${k}">${l}</button>`).join('')}</div>`;
+function applyLang(){
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+  if (typeof installBtn !== 'undefined') installBtn.lastChild.textContent = ' ' + T('install');
+}
+
+/* --- remember login on this device ---
+   Password is never stored: only username + that user's current hash.
+   If an Admin resets the password or deletes the user, the hash no longer
+   matches and the device is signed out automatically. */
 function rememberLogin(u){ lsSet(LS_REMEMBER, JSON.stringify({u: u.username, h: u.hash})); }
 function forgetLogin(){ lsSet(LS_REMEMBER, null); }
 function currentUserName(){
@@ -160,19 +279,20 @@ function currentUserName(){
   return u.username;
 }
 const DEFAULT_APPS = [
-  {id:'lean-quest',       name:'Lean Quest',          url:'https://changan-cps.github.io/lean-quest/',                 desc:'เกม/กิจกรรม Lean', icon:'🎯', color:'#0b5cad'},
-  {id:'lean-quest-admin', name:'Lean Quest (Admin)',  url:'https://changan-cps.github.io/lean-quest/index.html#admin', desc:'หน้าจัดการ Lean Quest', icon:'🛠️', color:'#6b4bc4'},
-  {id:'local-8090',       name:'Local App (8090)',    url:'http://localhost:8090/',                                    desc:'แอปที่รันบนเครื่อง', icon:'💻', color:'#3d7a5a'},
-  {id:'cps-pjo-audit',    name:'CPS PJO Audit',       url:'https://changan-cps.github.io/cps-pjo-audit/',              desc:'ระบบตรวจ PJO', icon:'📋', color:'#c2571a'},
+  {id:'lean-quest',       name:'Lean Quest',          url:'https://changan-cps.github.io/lean-quest/',                 desc:'Lean game / activity', icon:'🎯', color:'#0b5cad'},
+  {id:'lean-quest-admin', name:'Lean Quest (Admin)',  url:'https://changan-cps.github.io/lean-quest/index.html#admin', desc:'Lean Quest admin', icon:'🛠️', color:'#6b4bc4'},
+  {id:'local-8090',       name:'Local App (8090)',    url:'http://localhost:8090/',                                    desc:'Local app', icon:'💻', color:'#3d7a5a'},
+  {id:'cps-pjo-audit',    name:'CPS PJO Audit',       url:'https://changan-cps.github.io/cps-pjo-audit/',              desc:'PJO audit', icon:'📋', color:'#c2571a'},
 ];
 const ICONS = ['🎯','🛠️','💻','📋','📊','📈','🏭','🚗','🔧','📦','🧾','✅','📝','🎓','🗂️','📅','🔍','⚙️','🏆','📷'];
 const COLORS = ['#0b5cad','#6b4bc4','#3d7a5a','#c2571a','#b0305c','#2a7f8f','#8a6d1a','#4a5568'];
-// ประเภท Server ของแอป
+// App server types
 const SERVERS = [
-  {id:'external', label:'External Server', icon:'🌐', hint:'เปิดได้ทุกที่ผ่านอินเทอร์เน็ต', color:'#3b9bff'},
-  {id:'factory',  label:'Factory Server',  icon:'🏭', hint:'เปิดได้เฉพาะในเครือข่ายโรงงาน', color:'#5fd093'},
+  {id:'external', icon:'🌐', color:'#3b9bff'},
+  {id:'factory',  icon:'🏭', color:'#5fd093'},
 ];
-// เดาประเภทจาก URL: localhost / IP ภายใน / ชื่อเครื่องในวง LAN = Factory, นอกนั้น = External
+const srvLabel = id => T('srv')[id][0], srvHint = id => T('srv')[id][1];
+// Guess from URL: localhost / private IP / bare LAN hostname = Factory, otherwise External
 function guessServer(url){
   let h = ''; try { h = new URL(url).hostname; } catch { return 'external'; }
   if (h === 'localhost' || h.endsWith('.local') || h.endsWith('.lan') || !h.includes('.')) return 'factory';
@@ -181,13 +301,13 @@ function guessServer(url){
 }
 const serverOf = a => SERVERS.some(s => s.id === a.server) ? a.server : guessServer(a.url);
 const serverInfo = a => SERVERS.find(s => s.id === serverOf(a));
-const serverTag = a => { const s = serverInfo(a); return `<span class="tag srv" style="--s:${s.color}">${s.icon} ${s.label}</span>`; };
+const serverTag = a => { const s = serverInfo(a); return `<span class="tag srv" style="--s:${s.color}">${s.icon} ${srvLabel(s.id)}</span>`; };
 
 let cfg = null;          // {apps:[], users:[], updatedAt}
-let remoteAt = 0;        // updatedAt ของ config.json บนเว็บ
-let me = null;           // user object ที่ login อยู่
+let remoteAt = 0;        // updatedAt of config.json on the site
+let me = null;           // signed-in user
 let view = 'portal';     // portal | settings
-let tab = 'perm';        // perm | apps | users | publish
+let tab = 'perm';        // perm | apps | users | news | publish
 let q = '';
 let srvFilter = 'all';   // all | external | factory
 
@@ -195,7 +315,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
 const unhex = h => new Uint8Array(h.match(/../g).map(x => parseInt(x,16)));
-// ตัดอักขระที่มองไม่เห็น และสัญลักษณ์แปลก ๆ ที่หลุดมาหน้า/ท้ายชื่อ
+// strip invisible characters and stray marks/symbols at the start/end of names
 const cleanName = s => String(s ?? '').replace(/[\p{C}]/gu, '').replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}.)]+$/gu, '').replace(/\s+/g, ' ').trim();
 const dispName = u => cleanName(u?.name) || u?.username || '';
 const initial = u => (dispName(u).match(/[\p{L}\p{N}]/u)?.[0] || '?').toUpperCase();
@@ -235,6 +355,7 @@ const unpublished = () => cfg.users.length && (cfg.updatedAt||0) > remoteAt;
 
 /* ---------------- render ---------------- */
 function render(){
+  applyLang();
   const name = currentUserName();
   me = cfg.users.find(u => u.username === name) || null;
   if (!cfg.users.length) return renderSetup();
@@ -243,62 +364,69 @@ function render(){
   $('#root').innerHTML = `
     <header><div class="in">
       <div class="top">
-        <div class="logo"><img src="icon.webp" alt=""><div><h1>CPS Digital Platform</h1><div class="sub">Changan Production System</div></div></div>
+        <div class="logo"><img src="icon.webp" alt=""><div><h1>CPS Digital Platform</h1><div class="sub">Changan Production System${lang === 'zh' ? ' · 长安生产方式' : ''}</div></div></div>
         <div class="tools">
-          ${view === 'portal' ? `<input type="text" id="q" placeholder="🔍 Search…" value="${esc(q)}" aria-label="ค้นหาแอป">` : ''}
+          ${view === 'portal' ? `<input type="text" id="q" placeholder="${esc(T('search'))}" value="${esc(q)}" aria-label="${esc(T('searchAria'))}">` : ''}
           ${isAdmin(me) ? (view === 'settings'
-              ? `<button class="btn" data-act="go-portal">← กลับหน้าเมนู</button>`
-              : `<button class="btn" data-act="go-settings">⚙️ ตั้งค่า Permission</button>`) : ''}
-          <button class="who" data-act="profile" title="แก้ไขชื่อที่แสดง / รหัสผ่าน"><span class="avatar">${esc(initial(me))}</span>${esc(dispName(me))} ✏️</button>
-          <button class="btn" data-act="logout">ออกจากระบบ</button>
+              ? `<button class="btn" data-act="go-portal">${T('back')}</button>`
+              : `<button class="btn" data-act="go-settings">${T('settings')}</button>`) : ''}
+          <button class="who" data-act="profile" title="${esc(T('editProfile'))}"><span class="avatar">${esc(initial(me))}</span>${esc(dispName(me))} ✏️</button>
+          <button class="btn" data-act="logout">${T('logout')}</button>
+          ${langSwitch()}
         </div>
       </div>
       <div class="flow"><span>📅 Plan</span><span>📄 Standard</span><span>📊 Analyze</span><span>📈 Improve</span><span>✅ Follow up</span></div>
     </div></header>
     <main>${view === 'settings' ? settingsHtml() : (isAdmin(me) && unpublished()
-      ? `<div class="banner"><span>⚠️ เครื่องนี้มีการแก้ไขที่ยังไม่ได้เผยแพร่ — มือถือ/เครื่องอื่นจะยังเห็นแอปและสิทธิ์ชุดเดิม จนกว่าจะอัปโหลด <b>config.json</b> ขึ้น GitHub</span>
-         <button class="btn small" data-act="export">⬇️ ดาวน์โหลด config.json</button></div>` : '') + portalHtml()}</main>`;
+      ? `<div class="banner"><span>${T('bannerPortal')}</span>
+         <button class="btn small" data-act="export">${T('download')}</button></div>` : '') + portalHtml()}</main>`;
 }
 
 function renderSetup(){
   $('#root').innerHTML = `<div class="auth"><form class="box" id="setupForm">
+    ${langSwitch()}
     <img class="appicon" src="icon.webp" alt="CPS Digital Platform">
-    <h1>ตั้งค่าครั้งแรก</h1>
-    <p>ยังไม่มีผู้ใช้ในระบบ — สร้างบัญชีผู้ดูแล (Admin) ก่อน</p>
-    <label>ชื่อผู้ใช้</label><input type="text" name="u" required autocomplete="username" autofocus>
-    <label>ชื่อที่แสดง</label><input type="text" name="n">
-    <label>รหัสผ่าน (อย่างน้อย 6 ตัว)</label><input type="password" name="p" required minlength="6" autocomplete="new-password">
-    <label>ยืนยันรหัสผ่าน</label><input type="password" name="p2" required autocomplete="new-password">
+    <h1>${T('setupTitle')}</h1>
+    <p>${T('setupSub')}</p>
+    <label>${T('username')}</label><input type="text" name="u" required autocomplete="username" autofocus>
+    <label>${T('displayName')}</label><input type="text" name="n">
+    <label>${T('pwMin')}</label><input type="password" name="p" required minlength="6" autocomplete="new-password">
+    <label>${T('pwConfirm')}</label><input type="password" name="p2" required autocomplete="new-password">
     <div class="err" id="err"></div>
-    <button class="btn primary">สร้างบัญชี Admin</button>
+    <button class="btn primary">${T('createAdmin')}</button>
   </form></div>`;
   $('#setupForm').onsubmit = async e => {
     e.preventDefault();
     const f = e.target, u = f.u.value.trim();
-    if (f.p.value !== f.p2.value) return $('#err').textContent = 'รหัสผ่านไม่ตรงกัน';
+    if (f.p.value !== f.p2.value) return $('#err').textContent = T('pwMismatch');
     cfg.users.push({username:u, name:cleanName(f.n.value) || u, role:'admin', apps:[], ...(await makeCred(f.p.value))});
     saveCfg(); sessionStorage.setItem(SS_ME, u); view = 'settings'; tab = 'users'; render();
   };
 }
 
 function renderLogin(){
+  // keep what was typed when switching language
+  const old = $('#loginForm');
+  const typedU = old?.u.value, typedP = old?.p.value, typedR = old?.r.checked;
   $('#root').innerHTML = `<div class="auth"><form class="box" id="loginForm">
+    ${langSwitch()}
     <img class="appicon" src="icon.webp" alt="CPS Digital Platform">
     <h1>CPS Digital Platform</h1>
-    <p>เข้าสู่ระบบเพื่อดูแอปที่คุณมีสิทธิ์ใช้งาน</p>
-    <label>ชื่อผู้ใช้</label><input type="text" name="u" required autocomplete="username" value="${esc(lsGet(LS_LASTUSER) || '')}">
-    <label>รหัสผ่าน</label><input type="password" name="p" required autocomplete="current-password">
-    <label class="check"><input type="checkbox" name="r" checked> จดจำการเข้าสู่ระบบในเครื่องนี้</label>
+    <p>${T('loginSub')}</p>
+    <label>${T('username')}</label><input type="text" name="u" required autocomplete="username" value="${esc(typedU ?? lsGet(LS_LASTUSER) ?? '')}">
+    <label>${T('password')}</label><input type="password" name="p" required autocomplete="current-password">
+    <label class="check"><input type="checkbox" name="r" ${typedR === false ? '' : 'checked'}> ${T('remember')}</label>
     <div class="err" id="err"></div>
-    <button class="btn primary">เข้าสู่ระบบ</button>
+    <button class="btn primary">${T('login')}</button>
   </form></div>`;
   const lf = $('#loginForm');
+  if (typedP) lf.p.value = typedP;
   (lf.u.value ? lf.p : lf.u).focus();
   lf.onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
     const u = cfg.users.find(x => x.username.toLowerCase() === f.u.value.trim().toLowerCase());
-    if (!u || (await hashPw(f.p.value, u.salt)) !== u.hash) return $('#err').textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+    if (!u || (await hashPw(f.p.value, u.salt)) !== u.hash) return $('#err').textContent = T('loginErr');
     lsSet(LS_LASTUSER, u.username);
     f.r.checked ? rememberLogin(u) : forgetLogin();
     sessionStorage.setItem(SS_ME, u.username); view = 'portal'; q = ''; render();
@@ -321,100 +449,95 @@ function portalHtml(){
       </a>`;
   const sections = SERVERS.map(s => {
     const items = tiles.filter(a => serverOf(a) === s.id);
-    return items.length ? `<div class="sec" style="--s:${s.color}"><h2>${s.icon} ${s.label}</h2><small>${s.hint}</small><span class="n">${items.length} แอป</span></div>
+    return items.length ? `<div class="sec" style="--s:${s.color}"><h2>${s.icon} ${srvLabel(s.id)}</h2><small>${srvHint(s.id)}</small><span class="n">${T('nApps', items.length)}</span></div>
       <div class="grid">${items.map(tile).join('')}</div>` : '';
   }).join('');
   return `
-    ${usedSrv.length > 1 ? `<div class="filters">${[{id:'all', icon:'', label:'ทั้งหมด'}, ...usedSrv].map(s =>
-      `<button class="${srvFilter === s.id ? 'on' : ''}" data-srv="${s.id}">${s.icon} ${s.label}</button>`).join('')}</div>` : ''}
+    ${usedSrv.length > 1 ? `<div class="filters">${[{id:'all', icon:''}, ...usedSrv].map(s =>
+      `<button class="${srvFilter === s.id ? 'on' : ''}" data-srv="${s.id}">${s.icon} ${s.id === 'all' ? T('all') : srvLabel(s.id)}</button>`).join('')}</div>` : ''}
     ${tiles.length ? sections
-    : (quick.length ? '' : `<div class="empty">${all.length ? 'ไม่พบแอปที่ค้นหา' : 'คุณยังไม่ได้รับสิทธิ์ใช้งานแอปใด ๆ<br>กรุณาติดต่อผู้ดูแลระบบ'}</div>`)}
+    : (quick.length ? '' : `<div class="empty">${all.length ? T('noMatch') : T('noApps')}</div>`)}
     ${quick.length || news.length ? `<div class="lower">
-      ${quick.length ? `<section class="panel"><h3>⚡ Quick Access</h3><div class="quick">${quick.map(a => `
+      ${quick.length ? `<section class="panel"><h3>${T('quick')}</h3><div class="quick">${quick.map(a => `
         <a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.desc || a.url)}"><span>${esc(a.icon || '🔗')}</span>${esc(a.name)}</a>`).join('')}</div></section>` : ''}
-      ${news.length ? `<section class="panel"><h3>📣 Announcement</h3><ul class="news">${news.map((n,i) => `<li style="--d:${dots[i % dots.length]}">${esc(n)}</li>`).join('')}</ul></section>` : ''}
+      ${news.length ? `<section class="panel"><h3>${T('news')}</h3><ul class="news">${news.map((n,i) => `<li style="--d:${dots[i % dots.length]}">${esc(n)}</li>`).join('')}</ul></section>` : ''}
     </div>` : ''}`;
 }
 
 function settingsHtml(){
-  const tabs = [['perm','🔐 สิทธิ์ (Permission)'],['apps','🧩 แอป / ลิงก์'],['users','👤 ผู้ใช้'],['news','📣 ประกาศ'],['publish','☁️ เผยแพร่ / สำรอง']];
+  const tabs = [['perm',T('tabPerm')],['apps',T('tabApps')],['users',T('tabUsers')],['news',T('tabNews')],['publish',T('tabPublish')]];
   return `
-    ${unpublished() ? `<div class="banner"><span>⚠️ มีการแก้ไขที่ยังอยู่แค่ในเบราว์เซอร์นี้ — ต้องดาวน์โหลด <b>config.json</b> แล้วอัปโหลดขึ้นเว็บ ผู้ใช้เครื่องอื่นจึงจะเห็น</span>
-      <button class="btn small" data-act="export">⬇️ ดาวน์โหลด config.json</button></div>` : ''}
+    ${unpublished() ? `<div class="banner"><span>${T('bannerSettings')}</span>
+      <button class="btn small" data-act="export">${T('download')}</button></div>` : ''}
     <div class="tabs">${tabs.map(([k,l]) => `<button class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}</div>
     <div class="panel">${({perm:permHtml, apps:appsHtml, users:usersHtml, news:newsHtml, publish:publishHtml})[tab]()}</div>`;
 }
 
 function newsHtml(){
-  return `<h3 style="margin-top:0">ประกาศ (Announcement)</h3>
-  <textarea id="newsBox" placeholder="พิมพ์ประกาศ บรรทัดละ 1 เรื่อง">${esc((cfg.news||[]).join('\n'))}</textarea>
-  <p class="hint">บรรทัดละ 1 ประกาศ — บันทึกอัตโนมัติเมื่อคลิกออกจากช่อง · ผู้ใช้ทุกคนเห็นประกาศเหมือนกัน</p>`;
+  return `<h3 style="margin-top:0">${T('newsTitle')}</h3>
+  <textarea id="newsBox" placeholder="${esc(T('newsPh'))}">${esc((cfg.news||[]).join('\n'))}</textarea>
+  <p class="hint">${T('newsHint')}</p>`;
 }
 
 function permHtml(){
-  if (!cfg.apps.length) return `<div class="empty">ยังไม่มีแอป — เพิ่มที่แท็บ "แอป / ลิงก์"</div>`;
+  if (!cfg.apps.length) return `<div class="empty">${T('noAppsYet')}</div>`;
   return `<div class="scroll"><table class="matrix">
-    <tr><th>ผู้ใช้</th>${cfg.apps.map(a => `<th class="app-col">${esc(a.icon||'')}<br>${esc(a.name)}<br><span title="${serverInfo(a).label}">${serverInfo(a).icon}</span></th>`).join('')}<th class="c">ทั้งหมด</th></tr>
+    <tr><th>${T('user')}</th>${cfg.apps.map(a => `<th class="app-col">${esc(a.icon||'')}<br>${esc(a.name)}<br><span title="${esc(srvLabel(serverOf(a)))}">${serverInfo(a).icon}</span></th>`).join('')}<th class="c">${T('all')}</th></tr>
     ${cfg.users.map(u => { const adm = isAdmin(u); const all = adm || cfg.apps.every(a => (u.apps||[]).includes(a.id)); return `
       <tr><td><b>${esc(dispName(u))}</b> ${adm?'<span class="tag admin">Admin</span>':''}<div class="url">${esc(u.username)}</div></td>
       ${cfg.apps.map(a => `<td class="c"><input type="checkbox" data-perm="${esc(u.username)}|${esc(a.id)}" ${adm||(u.apps||[]).includes(a.id)?'checked':''} ${adm?'disabled':''} aria-label="${esc(u.username)} – ${esc(a.name)}"></td>`).join('')}
-      <td class="c"><input type="checkbox" data-permall="${esc(u.username)}" ${all?'checked':''} ${adm?'disabled':''} aria-label="ทั้งหมด"></td></tr>`; }).join('')}
+      <td class="c"><input type="checkbox" data-permall="${esc(u.username)}" ${all?'checked':''} ${adm?'disabled':''} aria-label="${esc(T('all'))}"></td></tr>`; }).join('')}
   </table></div>
-  <p class="hint">ติ๊กเพื่อให้สิทธิ์ — บันทึกทันที · Admin เห็นทุกแอปเสมอ</p>`;
+  <p class="hint">${T('permHint')}</p>`;
 }
 
 function appsHtml(){
-  return `<div class="toolbar"><h2>แอป / ลิงก์ (${cfg.apps.length})</h2><button class="btn primary" data-act="app-new">+ เพิ่มแอป</button></div>
+  return `<div class="toolbar"><h2>${T('apps')} (${cfg.apps.length})</h2><button class="btn primary" data-act="app-new">${T('addApp')}</button></div>
   <div class="scroll"><table>
-    <tr><th></th><th>ชื่อ</th><th>ประเภท Server</th><th>ลิงก์</th><th></th></tr>
+    <tr><th></th><th>${T('name')}</th><th>${T('serverType')}</th><th>${T('link')}</th><th></th></tr>
     ${cfg.apps.map((a,i) => `<tr>
       <td><span class="mini" style="--c:${esc(a.color||COLORS[0])}">${esc(a.icon||'🔗')}</span></td>
       <td><b>${esc(a.name)}</b> ${a.kind==='quick'?'<span class="tag">Quick Access</span>':''}<div class="url">${esc(a.desc||'')}</div></td>
       <td>${serverTag(a)}</td>
       <td><a class="url" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.url)}</a></td>
       <td class="act">
-        <button class="btn small" data-act="app-up" data-i="${i}" ${i===0?'disabled':''} title="เลื่อนขึ้น">↑</button>
-        <button class="btn small" data-act="app-down" data-i="${i}" ${i===cfg.apps.length-1?'disabled':''} title="เลื่อนลง">↓</button>
-        <button class="btn small" data-act="app-edit" data-i="${i}">แก้ไข</button>
-        <button class="btn small danger" data-act="app-del" data-i="${i}">ลบ</button></td></tr>`).join('')}
+        <button class="btn small" data-act="app-up" data-i="${i}" ${i===0?'disabled':''} title="${esc(T('moveUp'))}">↑</button>
+        <button class="btn small" data-act="app-down" data-i="${i}" ${i===cfg.apps.length-1?'disabled':''} title="${esc(T('moveDown'))}">↓</button>
+        <button class="btn small" data-act="app-edit" data-i="${i}">${T('edit')}</button>
+        <button class="btn small danger" data-act="app-del" data-i="${i}">${T('del')}</button></td></tr>`).join('')}
   </table></div>`;
 }
 
 function usersHtml(){
-  return `<div class="toolbar"><h2>ผู้ใช้ (${cfg.users.length})</h2><button class="btn primary" data-act="user-new">+ เพิ่มผู้ใช้</button></div>
+  return `<div class="toolbar"><h2>${T('users')} (${cfg.users.length})</h2><button class="btn primary" data-act="user-new">${T('addUser')}</button></div>
   <div class="scroll"><table>
-    <tr><th>ชื่อผู้ใช้</th><th>ชื่อที่แสดง</th><th>ระดับ</th><th class="c">จำนวนแอป</th><th></th></tr>
+    <tr><th>${T('username')}</th><th>${T('displayName')}</th><th>${T('role')}</th><th class="c">${T('appCount')}</th><th></th></tr>
     ${cfg.users.map((u,i) => `<tr>
       <td><b>${esc(u.username)}</b></td><td>${esc(dispName(u))}</td>
       <td><span class="tag ${isAdmin(u)?'admin':''}">${isAdmin(u)?'Admin':'User'}</span></td>
-      <td class="c">${isAdmin(u) ? 'ทั้งหมด' : (u.apps||[]).filter(id => cfg.apps.some(a => a.id===id)).length}</td>
-      <td class="act"><button class="btn small" data-act="user-edit" data-i="${i}">แก้ไข / รีเซ็ตรหัส</button>
-        <button class="btn small danger" data-act="user-del" data-i="${i}" ${u.username===me.username?'disabled':''}>ลบ</button></td></tr>`).join('')}
+      <td class="c">${isAdmin(u) ? T('all') : (u.apps||[]).filter(id => cfg.apps.some(a => a.id===id)).length}</td>
+      <td class="act"><button class="btn small" data-act="user-edit" data-i="${i}">${T('editReset')}</button>
+        <button class="btn small danger" data-act="user-del" data-i="${i}" ${u.username===me.username?'disabled':''}>${T('del')}</button></td></tr>`).join('')}
   </table></div>`;
 }
 
 function publishHtml(){
-  return `<h3 style="margin-top:0">เผยแพร่ให้ทุกเครื่องเห็น</h3>
-  <ol style="padding-left:20px;margin:0 0 14px">
-    <li>กด <b>ดาวน์โหลด config.json</b></li>
-    <li>อัปโหลดไฟล์ไปไว้โฟลเดอร์เดียวกับ <code>index.html</code> ของ Portal บน GitHub (ทับไฟล์เดิม)</li>
-    <li>รอ GitHub Pages อัปเดต ~1 นาที ผู้ใช้ทุกคนจะได้รายการแอปและสิทธิ์ชุดใหม่</li>
-  </ol>
+  return `<h3 style="margin-top:0">${T('pubTitle')}</h3>
+  <ol style="padding-left:20px;margin:0 0 14px">${T('pubSteps').map(s => `<li>${s}</li>`).join('')}</ol>
   <div class="row" style="flex-wrap:wrap">
-    <button class="btn primary" data-act="export">⬇️ ดาวน์โหลด config.json</button>
-    <button class="btn" data-act="import">⬆️ นำเข้า config.json</button>
-    <button class="btn danger" data-act="reset-local">ล้างข้อมูลในเบราว์เซอร์นี้</button>
+    <button class="btn primary" data-act="export">${T('download')}</button>
+    <button class="btn" data-act="import">${T('importCfg')}</button>
+    <button class="btn danger" data-act="reset-local">${T('resetLocal')}</button>
   </div>
   <input type="file" id="importFile" accept="application/json,.json" hidden>
-  <p class="hint">รหัสผ่านถูกเก็บแบบเข้ารหัสทางเดียว (PBKDF2) ในไฟล์ ไม่ได้เก็บเป็นข้อความตรง ๆ<br>
-  หมายเหตุ: Portal นี้ควบคุม "เมนูที่มองเห็น" เท่านั้น — ใครรู้ลิงก์ของแอปโดยตรงยังเปิดได้ ถ้าต้องการกันจริง ต้องมี login ในแต่ละแอปด้วย</p>`;
+  <p class="hint">${T('pubHint')}</p>`;
 }
 
 /* ---------------- dialogs ---------------- */
 function openDlg(html, onSubmit){
   const d = $('#dlg');
   d.innerHTML = `<form method="dialog" id="dlgForm">${html}<div class="err" id="derr"></div>
-    <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">ยกเลิก</button><button class="btn primary">บันทึก</button></div></form>`;
+    <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">${T('cancel')}</button><button class="btn primary">${T('save')}</button></div></form>`;
   $('#dlgCancel').onclick = () => d.close();
   $('#dlgForm').onsubmit = async e => {
     e.preventDefault();
@@ -427,17 +550,17 @@ function openDlg(html, onSubmit){
 
 function appDlg(i){
   const a = i == null ? {icon:ICONS[cfg.apps.length % ICONS.length], color:COLORS[cfg.apps.length % COLORS.length]} : cfg.apps[i];
-  openDlg(`<h3>${i == null ? 'เพิ่มแอป' : 'แก้ไขแอป'}</h3>
-    <label>ชื่อแอป</label><input type="text" name="name" required value="${esc(a.name)}">
-    <label>ลิงก์ (URL)</label><input type="url" name="url" required placeholder="https://…" value="${esc(a.url)}">
-    <label>คำอธิบาย</label><input type="text" name="desc" value="${esc(a.desc)}">
-    <label>ประเภท Server</label><select name="server">${SERVERS.map(s => `<option value="${s.id}" ${(i == null ? 'external' : serverOf(a)) === s.id ? 'selected' : ''}>${s.icon} ${s.label} — ${s.hint}</option>`).join('')}</select>
-    <label>ตำแหน่งที่แสดง</label><select name="kind"><option value="tile">ไทล์หลัก</option><option value="quick" ${a.kind==='quick'?'selected':''}>Quick Access (ไอคอนเล็กด้านล่าง)</option></select>
-    <div class="row"><div><label>ไอคอน</label><select name="icon">${[...new Set([a.icon, ...ICONS])].filter(Boolean).map(x => `<option ${x===a.icon?'selected':''}>${x}</option>`).join('')}</select></div>
-    <div><label>สี</label><input type="color" name="color" value="${esc(a.color||COLORS[0])}" style="width:100%;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--card)"></div></div>`,
+  openDlg(`<h3>${i == null ? T('addAppT') : T('editAppT')}</h3>
+    <label>${T('appName')}</label><input type="text" name="name" required value="${esc(a.name)}">
+    <label>${T('url')}</label><input type="url" name="url" required placeholder="https://…" value="${esc(a.url)}">
+    <label>${T('desc')}</label><input type="text" name="desc" value="${esc(a.desc)}">
+    <label>${T('serverType')}</label><select name="server">${SERVERS.map(s => `<option value="${s.id}" ${(i == null ? 'external' : serverOf(a)) === s.id ? 'selected' : ''}>${s.icon} ${srvLabel(s.id)} — ${srvHint(s.id)}</option>`).join('')}</select>
+    <label>${T('position')}</label><select name="kind"><option value="tile">${T('posTile')}</option><option value="quick" ${a.kind==='quick'?'selected':''}>${T('posQuick')}</option></select>
+    <div class="row"><div><label>${T('icon')}</label><select name="icon">${[...new Set([a.icon, ...ICONS])].filter(Boolean).map(x => `<option ${x===a.icon?'selected':''}>${x}</option>`).join('')}</select></div>
+    <div><label>${T('color')}</label><input type="color" name="color" value="${esc(a.color||COLORS[0])}" style="width:100%;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--card)"></div></div>`,
   f => {
     const url = f.url.value.trim();
-    if (!/^https?:\/\//i.test(url)) return 'ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://';
+    if (!/^https?:\/\//i.test(url)) return T('urlErr');
     const data = {name:f.name.value.trim(), url, desc:f.desc.value.trim(), kind:f.kind.value, server:f.server.value, icon:f.icon.value, color:f.color.value};
     if (i == null){
       let id = slug(data.name), n = 2;
@@ -446,7 +569,7 @@ function appDlg(i){
     } else Object.assign(cfg.apps[i], data);
     saveCfg();
   });
-  // แอปใหม่: เลือกประเภท Server ให้อัตโนมัติจาก URL จนกว่าจะเลือกเอง
+  // new app: pick the server type from the URL until the admin chooses one
   if (i == null){
     const f = $('#dlgForm'); let touched = false;
     f.server.onchange = () => touched = true;
@@ -457,15 +580,15 @@ function appDlg(i){
 function userDlg(i){
   const u = i == null ? {role:'user'} : cfg.users[i];
   const isNew = i == null;
-  openDlg(`<h3>${isNew ? 'เพิ่มผู้ใช้' : 'แก้ไขผู้ใช้'}</h3>
-    <label>ชื่อผู้ใช้</label><input type="text" name="u" required value="${esc(u.username)}" ${isNew?'':'readonly'} autocomplete="off">
-    <label>ชื่อที่แสดง</label><input type="text" name="n" value="${esc(isNew ? '' : dispName(u))}">
-    <label>ระดับ</label><select name="role"><option value="user" ${u.role!=='admin'?'selected':''}>User — เห็นเฉพาะแอปที่ได้รับสิทธิ์</option><option value="admin" ${u.role==='admin'?'selected':''}>Admin — เห็นทุกแอป + ตั้งค่าได้</option></select>
-    <label>${isNew ? 'รหัสผ่าน (อย่างน้อย 6 ตัว)' : 'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)'}</label><input type="password" name="p" ${isNew?'required':''} minlength="6" autocomplete="new-password">`,
+  openDlg(`<h3>${isNew ? T('addUserT') : T('editUserT')}</h3>
+    <label>${T('username')}</label><input type="text" name="u" required value="${esc(u.username)}" ${isNew?'':'readonly'} autocomplete="off">
+    <label>${T('displayName')}</label><input type="text" name="n" value="${esc(isNew ? '' : dispName(u))}">
+    <label>${T('role')}</label><select name="role"><option value="user" ${u.role!=='admin'?'selected':''}>${T('roleUser')}</option><option value="admin" ${u.role==='admin'?'selected':''}>${T('roleAdmin')}</option></select>
+    <label>${isNew ? T('pwMin') : T('pwNew')}</label><input type="password" name="p" ${isNew?'required':''} minlength="6" autocomplete="new-password">`,
   async f => {
     const username = f.u.value.trim(), role = f.role.value;
-    if (isNew && cfg.users.some(x => x.username.toLowerCase() === username.toLowerCase())) return 'มีชื่อผู้ใช้นี้อยู่แล้ว';
-    if (!isNew && u.role === 'admin' && role !== 'admin' && cfg.users.filter(isAdmin).length === 1) return 'ต้องมี Admin อย่างน้อย 1 คน';
+    if (isNew && cfg.users.some(x => x.username.toLowerCase() === username.toLowerCase())) return T('userExists');
+    if (!isNew && u.role === 'admin' && role !== 'admin' && cfg.users.filter(isAdmin).length === 1) return T('needAdmin');
     const cred = f.p.value ? await makeCred(f.p.value) : {};
     const name = cleanName(f.n.value) || username;
     if (isNew) cfg.users.push({username, name, role, apps:[], ...cred});
@@ -474,18 +597,18 @@ function userDlg(i){
   });
 }
 
-// ผู้ใช้ทุกคนแก้ชื่อที่แสดง / รหัสผ่านของตัวเองได้
+// every user can edit their own display name / password
 function profileDlg(){
-  openDlg(`<h3>โปรไฟล์ของฉัน</h3>
-    <label>ชื่อผู้ใช้ (ใช้ login — แก้ไม่ได้)</label><input type="text" value="${esc(me.username)}" readonly>
-    <label>ชื่อที่แสดง</label><input type="text" name="n" required maxlength="60" value="${esc(dispName(me))}" autofocus>
-    <label>รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)</label><input type="password" name="p" minlength="6" autocomplete="new-password">
-    <label>ยืนยันรหัสผ่านใหม่</label><input type="password" name="p2" autocomplete="new-password">
-    ${isAdmin(me) ? '' : '<p class="hint">ถ้าใช้หลายเครื่อง แจ้ง Admin ให้อัปเดต config.json ด้วย ไม่งั้นเครื่องอื่นจะยังเห็นชื่อเดิม</p>'}`,
+  openDlg(`<h3>${T('profile')}</h3>
+    <label>${T('usernameRO')}</label><input type="text" value="${esc(me.username)}" readonly>
+    <label>${T('displayName')}</label><input type="text" name="n" required maxlength="60" value="${esc(dispName(me))}" autofocus>
+    <label>${T('pwNew')}</label><input type="password" name="p" minlength="6" autocomplete="new-password">
+    <label>${T('pwNewConfirm')}</label><input type="password" name="p2" autocomplete="new-password">
+    ${isAdmin(me) ? '' : `<p class="hint">${T('profileHint')}</p>`}`,
   async f => {
     const name = cleanName(f.n.value);
-    if (!name) return 'กรุณาใส่ชื่อที่แสดง';
-    if (f.p.value && f.p.value !== f.p2.value) return 'รหัสผ่านไม่ตรงกัน';
+    if (!name) return T('needName');
+    if (f.p.value && f.p.value !== f.p2.value) return T('pwMismatch');
     const remembered = (() => { try { return JSON.parse(lsGet(LS_REMEMBER))?.u === me.username; } catch { return false; } })();
     Object.assign(me, {name}, f.p.value ? await makeCred(f.p.value) : {});
     if (remembered) rememberLogin(me);
@@ -495,8 +618,9 @@ function profileDlg(){
 
 /* ---------------- events ---------------- */
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-act],[data-srv]');
+  const t = e.target.closest('[data-tab],[data-act],[data-srv],[data-lang]');
   if (!t) return;
+  if (t.dataset.lang){ lang = t.dataset.lang; lsSet(LS_LANG, lang); return render(); }
   if (t.dataset.tab){ tab = t.dataset.tab; return render(); }
   if (t.dataset.srv){ srvFilter = t.dataset.srv; return render(); }
   const i = t.dataset.i != null ? +t.dataset.i : null;
@@ -516,14 +640,14 @@ document.addEventListener('click', e => {
       [cfg.apps[i], cfg.apps[j]] = [cfg.apps[j], cfg.apps[i]]; saveCfg(); return render();
     }
     case 'app-del':
-      if (!confirm(`ลบแอป "${cfg.apps[i].name}" ?`)) return;
+      if (!confirm(T('confirmDelApp', cfg.apps[i].name))) return;
       { const id = cfg.apps[i].id; cfg.apps.splice(i,1); cfg.users.forEach(u => u.apps = (u.apps||[]).filter(x => x !== id)); }
       saveCfg(); return render();
     case 'user-new': return userDlg(null);
     case 'user-edit': return userDlg(i);
     case 'user-del':
       if (cfg.users[i].username === me.username) return;
-      if (!confirm(`ลบผู้ใช้ "${cfg.users[i].username}" ?`)) return;
+      if (!confirm(T('confirmDelUser', cfg.users[i].username))) return;
       cfg.users.splice(i,1); saveCfg(); return render();
     case 'export': {
       const a = document.createElement('a');
@@ -532,7 +656,7 @@ document.addEventListener('click', e => {
     }
     case 'import': return $('#importFile').click();
     case 'reset-local':
-      if (!confirm('ล้างข้อมูลที่แก้ไขในเบราว์เซอร์นี้ แล้วกลับไปใช้ config.json บนเว็บ ?')) return;
+      if (!confirm(T('confirmReset'))) return;
       localStorage.removeItem(LS_CFG); sessionStorage.removeItem(SS_ME); return loadCfg().then(render);
   }
 });
@@ -541,7 +665,7 @@ document.addEventListener('change', e => {
   if (t.id === 'importFile' && t.files[0] && isAdmin(me)){
     t.files[0].text().then(txt => {
       let c; try { c = JSON.parse(txt); } catch {}
-      if (!validCfg(c) || !c.users.some(isAdmin)) return alert('ไฟล์ไม่ถูกต้อง (ต้องมี apps, users และ Admin อย่างน้อย 1 คน)');
+      if (!validCfg(c) || !c.users.some(isAdmin)) return alert(T('badFile'));
       cfg = c; saveCfg(); render();
     });
     return;
@@ -566,12 +690,13 @@ document.addEventListener('input', e => {
   const el = $('#q'); el.focus(); el.setSelectionRange(q.length, q.length);
 });
 
-/* ---------------- ติดตั้งเป็นแอป (PWA) ---------------- */
+/* ---------------- install as app (PWA) ---------------- */
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 let installEvt = null;
 const installBtn = document.createElement('button');
 installBtn.className = 'btn primary install-btn';
-installBtn.innerHTML = '<img src="favicon.png" alt=""> ติดตั้งแอป';
+installBtn.innerHTML = '<img src="favicon.png" alt=""> ';
+installBtn.appendChild(document.createTextNode(' ' + T('install')));
 installBtn.hidden = true;
 document.body.appendChild(installBtn);
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; installBtn.hidden = false; });
