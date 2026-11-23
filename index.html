@@ -35,6 +35,13 @@ label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
 .lang button{border:0;background:none;color:inherit;padding:6px 11px;cursor:pointer;font-size:13px;opacity:.75}
 .lang button.on{background:var(--brand);color:var(--brand-ink);font-weight:700;opacity:1}
 .auth .lang{display:flex;width:max-content;margin:-8px -8px 10px auto}
+.ghbar:empty{display:none}
+.ghbar{border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px;border:1px solid var(--line);background:rgba(59,155,255,.10)}
+.ghbar span{flex:1;min-width:200px}
+.ghbar.ok{background:rgba(95,208,147,.12);border-color:rgba(95,208,147,.45)}
+.ghbar.error{background:rgba(255,128,128,.12);border-color:rgba(255,128,128,.5)}
+.ghbar.pending,.ghbar.idle{background:var(--warn-bg);color:var(--warn-ink);border-color:transparent}
+.panel a{color:var(--brand)}
 label.check{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--ink);font-size:14px;cursor:pointer}
 .err{color:var(--danger);font-size:13px;min-height:20px;margin-top:8px}
 
@@ -248,6 +255,35 @@ const I18N = {
     srv:{external:['External Server','เปิดได้ทุกที่ผ่านอินเทอร์เน็ต'], factory:['Factory Server','เปิดได้เฉพาะในเครือข่ายโรงงาน']},
   },
 };
+// --- auto-upload to GitHub ---
+Object.assign(I18N.zh, {
+  ghTitle:'☁️ 自动上传到 GitHub', ghOn:repo => `✅ 已连接 <b>${repo}</b> — 每次修改都会自动上传，其他设备约 1 分钟后可见`,
+  ghOff:'连接一次后，管理员的每次修改都会自动上传 config.json，无需手动下载/上传。',
+  ghSteps:url => [`打开 <a href="${url}" target="_blank" rel="noopener">GitHub → 新建 Fine-grained token</a>`, 'Resource owner 选 <b>changan-cps</b>，Repository access 选 <b>Only select repositories → cps-portal</b>', 'Permissions → Repository permissions → <b>Contents: Read and write</b>，点击 Generate token', '复制 token 粘贴到下面，点击 连接'],
+  ghToken:'GitHub token', ghConnect:'连接', ghDisconnect:'断开连接', ghPublishNow:'☁️ 立即上传',
+  ghTokenHint:'token 只保存在本浏览器中，不会写入 config.json。请勿分享给他人。',
+  ghSaving:'☁️ 正在上传到 GitHub…', ghOk:'✅ 已上传到 GitHub — 其他设备约 1 分钟后可见', ghPending:'☁️ 有未上传的修改',
+  ghErr:m => `❌ 上传失败：${m}`, ghRetry:'重试', ghBadToken:'token 无效、已过期或没有 cps-portal 的写入权限', ghChecking:'正在检查 token…',
+});
+Object.assign(I18N.en, {
+  ghTitle:'☁️ Auto-upload to GitHub', ghOn:repo => `✅ Connected to <b>${repo}</b> — every change uploads automatically; other devices see it within ~1 minute`,
+  ghOff:'Connect once and every Admin change uploads config.json automatically — no more manual download/upload.',
+  ghSteps:url => [`Open <a href="${url}" target="_blank" rel="noopener">GitHub → new fine-grained token</a>`, 'Resource owner: <b>changan-cps</b>; Repository access: <b>Only select repositories → cps-portal</b>', 'Permissions → Repository permissions → <b>Contents: Read and write</b>, then Generate token', 'Copy the token, paste it below and click Connect'],
+  ghToken:'GitHub token', ghConnect:'Connect', ghDisconnect:'Disconnect', ghPublishNow:'☁️ Upload now',
+  ghTokenHint:'The token is stored only in this browser, never in config.json. Do not share it.',
+  ghSaving:'☁️ Uploading to GitHub…', ghOk:'✅ Uploaded to GitHub — other devices see it within ~1 minute', ghPending:'☁️ Changes waiting to upload',
+  ghErr:m => `❌ Upload failed: ${m}`, ghRetry:'Retry', ghBadToken:'Token is invalid, expired or has no write access to cps-portal', ghChecking:'Checking token…',
+});
+Object.assign(I18N.th, {
+  ghTitle:'☁️ อัปโหลดขึ้น GitHub อัตโนมัติ', ghOn:repo => `✅ เชื่อมต่อ <b>${repo}</b> แล้ว — ทุกการแก้ไขจะอัปขึ้นเอง เครื่องอื่นเห็นภายใน ~1 นาที`,
+  ghOff:'เชื่อมต่อครั้งเดียว ทุกการแก้ไขของ Admin จะอัปโหลด config.json ขึ้น GitHub เอง ไม่ต้องดาวน์โหลด/อัปโหลดเองอีก',
+  ghSteps:url => [`เปิด <a href="${url}" target="_blank" rel="noopener">GitHub → สร้าง Fine-grained token</a>`, 'Resource owner เลือก <b>changan-cps</b> · Repository access เลือก <b>Only select repositories → cps-portal</b>', 'Permissions → Repository permissions → <b>Contents: Read and write</b> แล้วกด Generate token', 'คัดลอก token มาวางด้านล่าง แล้วกด เชื่อมต่อ'],
+  ghToken:'GitHub token', ghConnect:'เชื่อมต่อ', ghDisconnect:'ยกเลิกการเชื่อมต่อ', ghPublishNow:'☁️ อัปโหลดตอนนี้',
+  ghTokenHint:'token เก็บไว้ในเบราว์เซอร์นี้เท่านั้น ไม่ถูกใส่ใน config.json — อย่าแชร์ให้คนอื่น',
+  ghSaving:'☁️ กำลังอัปโหลดขึ้น GitHub…', ghOk:'✅ อัปขึ้น GitHub แล้ว — เครื่องอื่นเห็นภายใน ~1 นาที', ghPending:'☁️ มีการแก้ไขที่รออัปโหลด',
+  ghErr:m => `❌ อัปโหลดไม่สำเร็จ: ${m}`, ghRetry:'ลองใหม่', ghBadToken:'token ไม่ถูกต้อง หมดอายุ หรือไม่มีสิทธิ์เขียน cps-portal', ghChecking:'กำลังตรวจสอบ token…',
+});
+
 function detectLang(){
   const saved = lsGet(LS_LANG);
   if (I18N[saved]) return saved;
@@ -348,6 +384,76 @@ async function loadCfg(){
 function saveCfg(){
   cfg.updatedAt = Date.now();
   try { localStorage.setItem(LS_CFG, JSON.stringify(cfg)); } catch {}
+  if (isAdmin(me) && ghToken()){        // auto-upload, batched so quick ticks become one commit
+    clearTimeout(ghTimer);
+    ghState = {status:'pending'};
+    ghTimer = setTimeout(ghPublish, 1500);
+  }
+}
+
+/* ---------------- auto-upload config.json to GitHub ----------------
+   Uses a fine-grained token (Contents: read & write on this repo only),
+   kept in this admin's browser only. */
+const LS_GHTOKEN = 'cpsPortal.ghToken';
+const GH = (() => {
+  const m = location.hostname.match(/^([\w-]+)\.github\.io$/i);
+  const seg = location.pathname.split('/').filter(Boolean)[0];
+  return {owner: m ? m[1] : 'changan-cps', repo: m && seg && !seg.includes('.') ? seg : 'cps-portal', path:'config.json', branch:'main'};
+})();
+const GH_TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new';
+let ghState = {status:'idle'};   // idle | pending | saving | ok | error
+let ghTimer = null, ghBusy = false, ghAgain = false;
+const ghToken = () => lsGet(LS_GHTOKEN);
+const b64utf8 = s => { let bin = ''; for (const b of new TextEncoder().encode(s)) bin += String.fromCharCode(b); return btoa(bin); };
+async function ghApi(path, opts = {}, token = ghToken()){
+  const r = await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}${path ? '/' + path : ''}`, {
+    ...opts, cache:'no-store',
+    headers:{'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + token, 'X-GitHub-Api-Version':'2022-11-28', ...(opts.body ? {'Content-Type':'application/json'} : {})},
+  });
+  if (!r.ok){ const e = new Error((await r.json().catch(() => ({}))).message || ('HTTP ' + r.status)); e.status = r.status; throw e; }
+  return r.json();
+}
+const ghErrText = e => [401, 403, 404].includes(e.status) ? T('ghBadToken') : (e.message || String(e));
+async function ghPublish(){
+  if (!ghToken()) return;
+  clearTimeout(ghTimer);
+  if (ghBusy){ ghAgain = true; return; }
+  ghBusy = true; ghState = {status:'saving'}; showGh();
+  const at = cfg.updatedAt, body = JSON.stringify(cfg, null, 2) + '\n';
+  try {
+    for (let attempt = 0; ; attempt++){
+      let sha;
+      try { sha = (await ghApi(`contents/${GH.path}?ref=${GH.branch}`)).sha; } catch (e){ if (e.status !== 404) throw e; }
+      try {
+        await ghApi(`contents/${GH.path}`, {method:'PUT', body: JSON.stringify({
+          message:`Update config.json from portal (${me?.username || 'admin'})`, content: b64utf8(body), sha, branch: GH.branch})});
+        break;
+      } catch (e){ if ((e.status === 409 || e.status === 422) && attempt < 2) continue; throw e; }
+    }
+    remoteAt = Math.max(remoteAt, at);
+    ghState = {status: cfg.updatedAt > at ? 'pending' : 'ok'};
+  } catch (e){
+    ghState = {status:'error', msg: ghErrText(e)};
+  }
+  ghBusy = false;
+  if (ghAgain || ghState.status === 'pending'){ ghAgain = false; ghTimer = setTimeout(ghPublish, 300); }
+  showGh();
+}
+function ghInner(){
+  const s = ghState.status;
+  if (s === 'saving') return `<span>${T('ghSaving')}</span>`;
+  if (s === 'error') return `<span>${T('ghErr', esc(ghState.msg))}</span><button class="btn small" data-act="gh-publish">${T('ghRetry')}</button>`;
+  if (s === 'ok') return `<span>${T('ghOk')}</span>`;
+  if (s === 'pending' || unpublished()) return `<span>${T('ghPending')}</span><button class="btn small" data-act="gh-publish">${T('ghPublishNow')}</button>`;
+  return '';
+}
+const ghBarHtml = () => `<div id="ghStatus" class="ghbar ${ghState.status}">${ghInner()}</div>`;
+function showGh(){ const el = $('#ghStatus'); if (el){ el.className = 'ghbar ' + ghState.status; el.innerHTML = ghInner(); } }
+async function ghConnect(token){
+  ghState = {status:'idle'};
+  const info = await ghApi('', {}, token);                       // can read the repo?
+  if (info.permissions && info.permissions.push === false) { const e = new Error(); e.status = 403; throw e; }
+  lsSet(LS_GHTOKEN, token);
 }
 const isAdmin = u => u?.role === 'admin';
 const myApps = () => cfg.apps.filter(a => isAdmin(me) || (me.apps||[]).includes(a.id));
@@ -377,7 +483,7 @@ function render(){
       </div>
       <div class="flow"><span>📅 Plan</span><span>📄 Standard</span><span>📊 Analyze</span><span>📈 Improve</span><span>✅ Follow up</span></div>
     </div></header>
-    <main>${view === 'settings' ? settingsHtml() : (isAdmin(me) && unpublished()
+    <main>${view === 'settings' ? settingsHtml() : (!isAdmin(me) ? '' : ghToken() ? ghBarHtml() : unpublished()
       ? `<div class="banner"><span>${T('bannerPortal')}</span>
          <button class="btn small" data-act="export">${T('download')}</button></div>` : '') + portalHtml()}</main>`;
 }
@@ -467,7 +573,7 @@ function portalHtml(){
 function settingsHtml(){
   const tabs = [['perm',T('tabPerm')],['apps',T('tabApps')],['users',T('tabUsers')],['news',T('tabNews')],['publish',T('tabPublish')]];
   return `
-    ${unpublished() ? `<div class="banner"><span>${T('bannerSettings')}</span>
+    ${ghToken() ? ghBarHtml() : unpublished() ? `<div class="banner"><span>${T('bannerSettings')}</span>
       <button class="btn small" data-act="export">${T('download')}</button></div>` : ''}
     <div class="tabs">${tabs.map(([k,l]) => `<button class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}</div>
     <div class="panel">${({perm:permHtml, apps:appsHtml, users:usersHtml, news:newsHtml, publish:publishHtml})[tab]()}</div>`;
@@ -522,7 +628,21 @@ function usersHtml(){
 }
 
 function publishHtml(){
-  return `<h3 style="margin-top:0">${T('pubTitle')}</h3>
+  const repo = `${GH.owner}/${GH.repo}`;
+  const gh = ghToken()
+    ? `<p>${T('ghOn', esc(repo))}</p>
+       <div class="row" style="flex-wrap:wrap"><button class="btn primary" data-act="gh-publish">${T('ghPublishNow')}</button>
+       <button class="btn danger" data-act="gh-disconnect">${T('ghDisconnect')}</button></div>`
+    : `<p style="margin-top:0">${T('ghOff')}</p>
+       <ol style="padding-left:20px;margin:0 0 10px">${T('ghSteps', GH_TOKEN_URL).map(s => `<li>${s}</li>`).join('')}</ol>
+       <form id="ghForm" class="row" style="flex-wrap:wrap;align-items:flex-end">
+         <div style="flex:1 1 260px"><label>${T('ghToken')} · ${esc(repo)}</label><input type="password" name="t" required autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>
+         <button class="btn primary" style="flex:0 0 auto">${T('ghConnect')}</button>
+       </form><div class="err" id="ghErr"></div>
+       <p class="hint">${T('ghTokenHint')}</p>`;
+  return `<h3 style="margin-top:0">${T('ghTitle')}</h3>${gh}
+  <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+  <h3>${T('pubTitle')}</h3>
   <ol style="padding-left:20px;margin:0 0 14px">${T('pubSteps').map(s => `<li>${s}</li>`).join('')}</ol>
   <div class="row" style="flex-wrap:wrap">
     <button class="btn primary" data-act="export">${T('download')}</button>
@@ -655,6 +775,8 @@ document.addEventListener('click', e => {
       a.download = 'config.json'; a.click(); URL.revokeObjectURL(a.href); return;
     }
     case 'import': return $('#importFile').click();
+    case 'gh-publish': return ghPublish();
+    case 'gh-disconnect': lsSet(LS_GHTOKEN, null); ghState = {status:'idle'}; return render();
     case 'reset-local':
       if (!confirm(T('confirmReset'))) return;
       localStorage.removeItem(LS_CFG); sessionStorage.removeItem(SS_ME); return loadCfg().then(render);
@@ -707,6 +829,18 @@ installBtn.onclick = async () => {
   await installEvt.userChoice;
   installEvt = null; installBtn.hidden = true;
 };
+
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'ghForm' || !isAdmin(me)) return;
+  e.preventDefault();
+  const token = e.target.t.value.trim(), err = $('#ghErr'), btn = e.target.querySelector('button');
+  btn.disabled = true; err.textContent = T('ghChecking');
+  try {
+    await ghConnect(token);
+    render();
+    if (unpublished()) ghPublish();
+  } catch (x){ err.textContent = ghErrText(x); btn.disabled = false; }
+});
 
 loadCfg().then(render);
 </script>
