@@ -255,7 +255,9 @@ function render(){
       </div>
       <div class="flow"><span>📅 Plan</span><span>📄 Standard</span><span>📊 Analyze</span><span>📈 Improve</span><span>✅ Follow up</span></div>
     </div></header>
-    <main>${view === 'settings' ? settingsHtml() : portalHtml()}</main>`;
+    <main>${view === 'settings' ? settingsHtml() : (isAdmin(me) && unpublished()
+      ? `<div class="banner"><span>⚠️ เครื่องนี้มีการแก้ไขที่ยังไม่ได้เผยแพร่ — มือถือ/เครื่องอื่นจะยังเห็นแอปและสิทธิ์ชุดเดิม จนกว่าจะอัปโหลด <b>config.json</b> ขึ้น GitHub</span>
+         <button class="btn small" data-act="export">⬇️ ดาวน์โหลด config.json</button></div>` : '') + portalHtml()}</main>`;
 }
 
 function renderSetup(){
