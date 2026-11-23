@@ -35,6 +35,11 @@ label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
 .lang button{border:0;background:none;color:inherit;padding:6px 11px;cursor:pointer;font-size:13px;opacity:.75}
 .lang button.on{background:var(--brand);color:var(--brand-ink);font-weight:700;opacity:1}
 .auth .lang{display:flex;width:max-content;margin:-8px -8px 10px auto}
+.embed{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.ebar{flex:none;display:flex;align-items:center;gap:10px;padding:6px 10px;background:linear-gradient(115deg,#082a6b,#0b469f);border-bottom:1px solid var(--line)}
+.ebar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.ebar .btn{background:rgba(4,18,43,.45);border-color:rgba(255,255,255,.25);text-decoration:none}
+.embed iframe{flex:1;width:100%;border:0;background:#fff}
 .rolesel{width:auto;min-width:92px;padding:5px 6px;font-size:13px}
 .ghbar:empty{display:none}
 .ghbar{border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px;border:1px solid var(--line);background:rgba(59,155,255,.10)}
@@ -289,21 +294,21 @@ Object.assign(I18N.th, {
 Object.assign(I18N.zh, {
   ssoWait:'请稍候…', ssoLocked:'密码错误次数过多，请 15 分钟后再试', ssoExpired:'登录已过期，请重新登录', ssoForbidden:'您没有此应用的权限',
   ssoDown:'无法连接登录服务器，请检查网络后重试。', ssoSaving:'☁️ 正在保存…', ssoSaved:'✅ 已保存 — 所有设备立即生效', ssoSaveErr:m => `❌ 保存失败：${m}`,
-  ssoOpening:'正在打开…', roleNone:'— 无权限 —', appSso:'单点登录 (SSO)', ssoModeOff:'普通链接', ssoModeTicket:'自动登录 (应用已支持 CPS SSO)',
+  embedNew:'在新窗口打开', ssoOpening:'正在打开…', roleNone:'— 无权限 —', appSso:'单点登录 (SSO)', ssoModeOff:'普通链接', ssoModeTicket:'自动登录 (应用已支持 CPS SSO)',
   appRoles:'应用内角色 (逗号分隔，第一个为最高权限，可留空)',
   ssoPubTitle:'☁️ 数据保存在 CPS SSO 服务器', ssoPubText:'每次修改都会自动保存，所有设备立即生效，无需上传文件。', ssoBackup:'⬇️ 下载备份',
 });
 Object.assign(I18N.en, {
   ssoWait:'Please wait…', ssoLocked:'Too many wrong passwords. Try again in 15 minutes.', ssoExpired:'Your session has expired. Please sign in again.', ssoForbidden:'You do not have access to this app',
   ssoDown:'Cannot reach the login server. Check your connection and try again.', ssoSaving:'☁️ Saving…', ssoSaved:'✅ Saved — live on every device', ssoSaveErr:m => `❌ Save failed: ${m}`,
-  ssoOpening:'Opening…', roleNone:'— no access —', appSso:'Single sign-on (SSO)', ssoModeOff:'Plain link', ssoModeTicket:'Sign in automatically (app supports CPS SSO)',
+  embedNew:'Open in a new window', ssoOpening:'Opening…', roleNone:'— no access —', appSso:'Single sign-on (SSO)', ssoModeOff:'Plain link', ssoModeTicket:'Sign in automatically (app supports CPS SSO)',
   appRoles:'Roles inside the app (comma separated, highest first, optional)',
   ssoPubTitle:'☁️ Data lives on the CPS SSO server', ssoPubText:'Every change is saved automatically and is live on every device at once. No files to upload.', ssoBackup:'⬇️ Download backup',
 });
 Object.assign(I18N.th, {
   ssoWait:'กรุณารอสักครู่…', ssoLocked:'ใส่รหัสผิดหลายครั้ง กรุณารอ 15 นาที', ssoExpired:'หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่', ssoForbidden:'คุณไม่มีสิทธิ์ใช้แอปนี้',
   ssoDown:'เชื่อมต่อเซิร์ฟเวอร์ login ไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่', ssoSaving:'☁️ กำลังบันทึก…', ssoSaved:'✅ บันทึกแล้ว — ทุกเครื่องเห็นทันที', ssoSaveErr:m => `❌ บันทึกไม่สำเร็จ: ${m}`,
-  ssoOpening:'กำลังเปิด…', roleNone:'— ไม่มีสิทธิ์ —', appSso:'เข้าสู่ระบบอัตโนมัติ (SSO)', ssoModeOff:'ลิงก์ธรรมดา', ssoModeTicket:'เข้าให้อัตโนมัติ (แอปรองรับ CPS SSO แล้ว)',
+  embedNew:'เปิดในหน้าต่างใหม่', ssoOpening:'กำลังเปิด…', roleNone:'— ไม่มีสิทธิ์ —', appSso:'เข้าสู่ระบบอัตโนมัติ (SSO)', ssoModeOff:'ลิงก์ธรรมดา', ssoModeTicket:'เข้าให้อัตโนมัติ (แอปรองรับ CPS SSO แล้ว)',
   appRoles:'บทบาทในแอป (คั่นด้วย , · ตัวแรกสิทธิ์สูงสุด · เว้นว่างได้)',
   ssoPubTitle:'☁️ ข้อมูลเก็บที่เซิร์ฟเวอร์ CPS SSO', ssoPubText:'ทุกการแก้ไขบันทึกอัตโนมัติ ทุกเครื่องเห็นทันที ไม่ต้องอัปโหลดไฟล์', ssoBackup:'⬇️ ดาวน์โหลดสำรอง',
 });
@@ -371,6 +376,19 @@ let tab = 'perm';        // perm | apps | users | news | publish
 let q = '';
 let srvFilter = 'all';   // all | external | factory
 
+/* ---------------- apps inside the portal window ----------------
+   Installed as an app (standalone window), a tile for an app on this same site opens INSIDE the portal window
+   with a bar to come back, so the taskbar icon always brings up the portal and not another app's window.
+   In a normal browser tab tiles keep opening in a new tab. localStorage cpsPortal.embed = '1' / '0' forces it on / off. */
+const EMBED = (() => { const f = lsGet('cpsPortal.embed'); return f === '1' || (f !== '0' && (matchMedia('(display-mode: standalone)').matches || navigator.standalone === true)); })();
+let embedApp = null;      // app shown inside the portal window
+const sameSite = url => { try { const u = new URL(url, location.href); return u.origin === location.origin && !u.pathname.startsWith(new URL('.', location.href).pathname); } catch { return false; } };
+function embedOpen(a){ embedApp = a; try { history.pushState({embed: a.id}, ''); } catch {} render(); }
+function embedClose(){ embedApp = null; render(); }
+window.addEventListener('popstate', () => { if (embedApp) embedClose(); });
+// if the portal itself ends up inside its own frame (an embedded app sent the user back to sign in), take over the window
+if (window.top !== window) { try { if (window.top.location.origin === location.origin) window.top.location.replace(new URL('.', location.href).href); } catch {} }
+
 /* ---------------- SSO mode ----------------
    When sso.json ({"url": "<Apps Script /exec URL>"}) exists next to this file, users, apps and
    permissions live on the CPS SSO server (see sso/Code.gs) instead of config.json:
@@ -393,6 +411,7 @@ function ssoSignOut(){ lsSet(LS_SSO, null); ssoUser = null; cfg = {apps:[], user
 // after signing in from another app's gate (…/cps-portal/?next=<url>) go back to that app
 function ssoNext(){
   const n = new URLSearchParams(location.search).get('next');
+  if (EMBED){ if (n) history.replaceState(null, '', location.pathname); return false; }   // installed app: stay in the portal window
   try { const u = new URL(n, location.href); if (n && u.origin === location.origin){ location.replace(u.href); return true; } } catch {}
   return false;
 }
@@ -572,6 +591,17 @@ function render(){
   if (SSO_URL ? ssoNeedsSetup : !cfg.users.length) return renderSetup();
   if (!me) return renderLogin();
   if (view === 'settings' && !isAdmin(me)) view = 'portal';
+  if (embedApp){
+    const cur = $('#embedFrame');
+    if (cur && cur.dataset.app === embedApp.id) return;        // keep the running app; don't reload it on re-render
+    $('#root').innerHTML = `<div class="embed">
+      <div class="ebar"><button class="btn small" data-act="embed-close">← CPS Digital Platform</button>
+        <b>${esc(embedApp.icon || '')} ${esc(embedApp.name)}</b>
+        <a class="btn small" href="${esc(embedApp.url)}" target="_blank" rel="noopener" title="${esc(T('embedNew'))}">↗</a></div>
+      <iframe id="embedFrame" data-app="${esc(embedApp.id)}" src="${esc(embedApp.url)}" title="${esc(embedApp.name)}"
+        allow="camera; microphone; fullscreen; clipboard-write; display-capture; autoplay"></iframe></div>`;
+    return;
+  }
   $('#root').innerHTML = `
     <header><div class="in">
       <div class="top">
@@ -681,7 +711,7 @@ function portalHtml(){
   const quick = list.filter(a => a.kind === 'quick');
   const news = cfg.news || [], dots = ['#3b9bff','#f5b83d','#5fd093','#ff8080'];
   const tile = a => `
-      <a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.url)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}>
+      <a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.url)}" data-app="${esc(a.id)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}>
         <span class="ico">${esc(a.icon || '🔗')}</span>
         <span><b>${esc(a.name)}</b>${a.desc ? `<small>${esc(a.desc)}</small>` : ''}</span>
       </a>`;
@@ -697,7 +727,7 @@ function portalHtml(){
     : (quick.length ? '' : `<div class="empty">${all.length ? T('noMatch') : T('noApps')}</div>`)}
     ${quick.length || news.length ? `<div class="lower">
       ${quick.length ? `<section class="panel"><h3>${T('quick')}</h3><div class="quick">${quick.map(a => `
-        <a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.desc || a.url)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span>${esc(a.icon || '🔗')}</span>${esc(a.name)}</a>`).join('')}</div></section>` : ''}
+        <a href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.desc || a.url)}" data-app="${esc(a.id)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span>${esc(a.icon || '🔗')}</span>${esc(a.name)}</a>`).join('')}</div></section>` : ''}
       ${news.length ? `<section class="panel"><h3>${T('news')}</h3><ul class="news">${news.map((n,i) => `<li style="--d:${dots[i % dots.length]}">${esc(n)}</li>`).join('')}</ul></section>` : ''}
     </div>` : ''}`;
 }
@@ -883,6 +913,14 @@ function profileDlg(){
 }
 
 /* ---------------- events ---------------- */
+document.addEventListener('click', e => {
+  const a = e.target.closest('main a[data-app]');
+  if (!a || !EMBED || a.dataset.ticket || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  const app = cfg.apps.find(x => x.id === a.dataset.app);
+  if (!app || !sameSite(app.url)) return;          // other sites (factory servers, JDY…) still open outside
+  e.preventDefault();
+  embedOpen(app);
+});
 // SSO apps: open a tab right away (keeps pop-up blockers happy), then send it to the app with a 2-minute ticket
 document.addEventListener('click', e => {
   const a = e.target.closest('a[data-ticket]');
@@ -909,7 +947,8 @@ document.addEventListener('click', e => {
   const i = t.dataset.i != null ? +t.dataset.i : null;
   const admin = isAdmin(me);
   switch (t.dataset.act){
-    case 'logout': sessionStorage.removeItem(SS_ME); forgetLogin(); if (SSO_URL) ssoSignOut(); view = 'portal'; return render();
+    case 'logout': embedApp = null; sessionStorage.removeItem(SS_ME); forgetLogin(); if (SSO_URL) ssoSignOut(); view = 'portal'; return render();
+    case 'embed-close': if (history.state && history.state.embed) return history.back(); return embedClose();
     case 'profile': return profileDlg();
     case 'go-portal': view = 'portal'; return render();
     case 'go-settings': if (admin){ view = 'settings'; render(); } return;
