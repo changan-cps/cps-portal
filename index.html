@@ -31,6 +31,7 @@ button,input,select{font:inherit;color:inherit}
 input[type=text],input[type=password],input[type=url],select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
 input:focus,select:focus,.btn:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+label.check{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--ink);font-size:14px;cursor:pointer}
 .err{color:var(--danger);font-size:13px;min-height:20px;margin-top:8px}
 
 /* auth */
@@ -140,6 +141,24 @@ dialog h3{margin:0 0 4px}
    และ localStorage ของเบราว์เซอร์ (ฉบับที่แก้ล่าสุดจะถูกใช้)
    ========================================================= */
 const LS_CFG = 'cpsPortal.cfg', SS_ME = 'cpsPortal.me';
+const LS_REMEMBER = 'cpsPortal.remember', LS_LASTUSER = 'cpsPortal.lastUser';
+
+/* --- จดจำการเข้าสู่ระบบในเครื่องนี้ ---
+   ไม่ได้เก็บรหัสผ่าน: เก็บแค่ชื่อผู้ใช้ + hash ปัจจุบันของผู้ใช้นั้น
+   ถ้า Admin รีเซ็ตรหัส / ลบผู้ใช้ hash จะไม่ตรง -> ต้อง login ใหม่อัตโนมัติ */
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+function rememberLogin(u){ lsSet(LS_REMEMBER, JSON.stringify({u: u.username, h: u.hash})); }
+function forgetLogin(){ lsSet(LS_REMEMBER, null); }
+function currentUserName(){
+  const s = sessionStorage.getItem(SS_ME);
+  if (s) return s;
+  let r = null; try { r = JSON.parse(lsGet(LS_REMEMBER)); } catch {}
+  const u = r && cfg.users.find(x => x.username === r.u && x.hash === r.h);
+  if (!u){ if (r) forgetLogin(); return null; }
+  sessionStorage.setItem(SS_ME, u.username);
+  return u.username;
+}
 const DEFAULT_APPS = [
   {id:'lean-quest',       name:'Lean Quest',          url:'https://changan-cps.github.io/lean-quest/',                 desc:'เกม/กิจกรรม Lean', icon:'🎯', color:'#0b5cad'},
   {id:'lean-quest-admin', name:'Lean Quest (Admin)',  url:'https://changan-cps.github.io/lean-quest/index.html#admin', desc:'หน้าจัดการ Lean Quest', icon:'🛠️', color:'#6b4bc4'},
@@ -216,7 +235,7 @@ const unpublished = () => cfg.users.length && (cfg.updatedAt||0) > remoteAt;
 
 /* ---------------- render ---------------- */
 function render(){
-  const name = sessionStorage.getItem(SS_ME);
+  const name = currentUserName();
   me = cfg.users.find(u => u.username === name) || null;
   if (!cfg.users.length) return renderSetup();
   if (!me) return renderLogin();
@@ -265,16 +284,21 @@ function renderLogin(){
     <img class="appicon" src="icon.webp" alt="CPS Digital Platform">
     <h1>CPS Digital Platform</h1>
     <p>เข้าสู่ระบบเพื่อดูแอปที่คุณมีสิทธิ์ใช้งาน</p>
-    <label>ชื่อผู้ใช้</label><input type="text" name="u" required autocomplete="username" autofocus>
+    <label>ชื่อผู้ใช้</label><input type="text" name="u" required autocomplete="username" value="${esc(lsGet(LS_LASTUSER) || '')}">
     <label>รหัสผ่าน</label><input type="password" name="p" required autocomplete="current-password">
+    <label class="check"><input type="checkbox" name="r" checked> จดจำการเข้าสู่ระบบในเครื่องนี้</label>
     <div class="err" id="err"></div>
     <button class="btn primary">เข้าสู่ระบบ</button>
   </form></div>`;
-  $('#loginForm').onsubmit = async e => {
+  const lf = $('#loginForm');
+  (lf.u.value ? lf.p : lf.u).focus();
+  lf.onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
     const u = cfg.users.find(x => x.username.toLowerCase() === f.u.value.trim().toLowerCase());
     if (!u || (await hashPw(f.p.value, u.salt)) !== u.hash) return $('#err').textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+    lsSet(LS_LASTUSER, u.username);
+    f.r.checked ? rememberLogin(u) : forgetLogin();
     sessionStorage.setItem(SS_ME, u.username); view = 'portal'; q = ''; render();
   };
 }
@@ -460,7 +484,9 @@ function profileDlg(){
     const name = cleanName(f.n.value);
     if (!name) return 'กรุณาใส่ชื่อที่แสดง';
     if (f.p.value && f.p.value !== f.p2.value) return 'รหัสผ่านไม่ตรงกัน';
+    const remembered = (() => { try { return JSON.parse(lsGet(LS_REMEMBER))?.u === me.username; } catch { return false; } })();
     Object.assign(me, {name}, f.p.value ? await makeCred(f.p.value) : {});
+    if (remembered) rememberLogin(me);
     saveCfg();
   });
 }
@@ -474,7 +500,7 @@ document.addEventListener('click', e => {
   const i = t.dataset.i != null ? +t.dataset.i : null;
   const admin = isAdmin(me);
   switch (t.dataset.act){
-    case 'logout': sessionStorage.removeItem(SS_ME); view = 'portal'; return render();
+    case 'logout': sessionStorage.removeItem(SS_ME); forgetLogin(); view = 'portal'; return render();
     case 'profile': return profileDlg();
     case 'go-portal': view = 'portal'; return render();
     case 'go-settings': if (admin){ view = 'settings'; render(); } return;
