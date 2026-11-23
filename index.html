@@ -380,10 +380,10 @@ let srvFilter = 'all';   // all | external | factory
    Installed as an app (standalone window), a tile for an app on this same site opens INSIDE the portal window
    with a bar to come back, so the taskbar icon always brings up the portal and not another app's window.
    In a normal browser tab tiles keep opening in a new tab. localStorage cpsPortal.embed = '1' / '0' forces it on / off. */
-const EMBED = (() => { const f = lsGet('cpsPortal.embed'); return f === '1' || (f !== '0' && (matchMedia('(display-mode: standalone)').matches || navigator.standalone === true)); })();
+const EMBED = (() => { const f = lsGet('cpsPortal.embed'); return f === '1' || (f !== '0' && (['standalone', 'minimal-ui', 'fullscreen', 'window-controls-overlay'].some(m => matchMedia('(display-mode: ' + m + ')').matches) || navigator.standalone === true)); })();
 let embedApp = null;      // app shown inside the portal window
 const sameSite = url => { try { const u = new URL(url, location.href); return u.origin === location.origin && !u.pathname.startsWith(new URL('.', location.href).pathname); } catch { return false; } };
-function embedOpen(a){ embedApp = a; try { history.pushState({embed: a.id}, ''); } catch {} render(); }
+function embedOpen(a, url){ embedApp = {...a, url: url || a.url}; try { history.pushState({embed: a.id}, ''); } catch {} render(); }
 function embedClose(){ embedApp = null; render(); }
 window.addEventListener('popstate', () => { if (embedApp) embedClose(); });
 // if the portal itself ends up inside its own frame (an embedded app sent the user back to sign in), take over the window
@@ -915,11 +915,14 @@ function profileDlg(){
 /* ---------------- events ---------------- */
 document.addEventListener('click', e => {
   const a = e.target.closest('main a[data-app]');
-  if (!a || !EMBED || a.dataset.ticket || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  if (!a || !EMBED || e.ctrlKey || e.metaKey || e.shiftKey) return;
   const app = cfg.apps.find(x => x.id === a.dataset.app);
   if (!app || !sameSite(app.url)) return;          // other sites (factory servers, JDY…) still open outside
-  e.preventDefault();
-  embedOpen(app);
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (!(SSO_URL && app.sso === 'ticket')) return embedOpen(app);
+  sso('ticket', {token: lsGet(LS_SSO), app: app.id})
+    .then(d => embedOpen(app, insertParam(app.url, 'sso', d.ticket)))
+    .catch(x => { if (x.code === 'AUTH'){ ssoSignOut(); return loadCfg().then(render); } alert(ssoMsg(x)); });
 });
 // SSO apps: open a tab right away (keeps pop-up blockers happy), then send it to the app with a 2-minute ticket
 document.addEventListener('click', e => {
