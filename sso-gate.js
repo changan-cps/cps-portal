@@ -47,7 +47,7 @@
   function check() {
     var token = get(TOKEN_KEY), seen = last();
     // checked a moment ago with this same sign-in: don't make every page load wait for the server
-    if (!wantTicket && token && seen.t === token && Date.now() - seen.at < OK_MS && tokenOk(seen)) return Promise.resolve({ status: 'ok' });
+    if (!wantTicket && token && seen.t === token && Date.now() - seen.at < OK_MS && tokenOk(seen)) { if (seen.user) window.CPS_USER = seen.user; return Promise.resolve({ status: 'ok' }); }
     return fetch(portal + 'sso.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; }, function () { return undefined; })
       .then(function (cfg) {
@@ -56,7 +56,7 @@
         ssoUrl = cfg.url;
         if (!token) return { status: 'auth' };
         return post(wantTicket ? 'ticket' : wantToken ? 'apptoken' : 'check').then(function (j) {
-          if (j.ok) { set(OK_KEY, JSON.stringify({ t: token, at: Date.now(), tok: j.data.apptoken, exp: j.data.exp })); window.CPS_USER = j.data.user; return { status: 'ok', ticket: j.data.ticket }; }
+          if (j.ok) { set(OK_KEY, JSON.stringify({ t: token, at: Date.now(), tok: j.data.apptoken, exp: j.data.exp, user: j.data.user })); window.CPS_USER = j.data.user; return { status: 'ok', ticket: j.data.ticket }; }
           if (j.code === 'AUTH') { try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ } return { status: 'auth' }; }
           if (j.code === 'FORBIDDEN') return { status: 'forbidden' };
           throw new Error(j.message || j.code);
@@ -64,6 +64,7 @@
       })
       .catch(function () {
         // server unreachable: someone verified on this device in the last 7 days may keep working (e.g. flaky Wi-Fi on the line)
+        if (seen.user && seen.t === token) window.CPS_USER = seen.user;
         return { status: !wantTicket && token && seen.t === token && Date.now() - seen.at < GRACE_MS && (!wantToken || seen.exp > Date.now()) ? 'ok' : 'offline' };
       });
   }
