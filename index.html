@@ -75,7 +75,7 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
 .auth{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
 .auth .box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 26px 26px}
 .auth .appicon{display:block;width:96px;height:96px;margin:0 auto 14px;border-radius:22px}
-.auth h1{margin:0 0 4px;font-size:22px;line-height:1.25;text-align:center;color:var(--brand);letter-spacing:-.01em}
+.auth h1{text-wrap:balance;margin:0 0 4px;font-size:22px;line-height:1.25;text-align:center;color:var(--brand);letter-spacing:-.01em}
 .auth p{margin:0 0 8px;color:var(--muted);font-size:14px;text-align:center}
 .auth .btn{width:100%;margin-top:16px;min-height:48px;font-size:16px}
 .auth details{margin-top:14px;font-size:13px;color:var(--muted)}
@@ -94,6 +94,7 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
   input[type=text],input[type=password],input[type=url],input[type=search],select{min-height:48px}
   .rolesel{min-height:44px}
   .tabs button{min-height:48px}
+  .act .btn{min-width:44px}
 }
 
 /* header */
@@ -162,7 +163,7 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .sec p{grid-row:2;grid-column:1/-1;margin:0;color:var(--muted);font-size:13px}
 .sec .n{grid-row:1;grid-column:2;color:var(--muted);font-size:13px;white-space:nowrap}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));grid-auto-rows:1fr;gap:10px}
-.app{display:flex;align-items:center;gap:14px;min-height:78px;padding:12px 12px 12px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;
+.app{display:flex;align-items:center;gap:14px;min-height:78px;padding:12px 12px 12px 14px;background:var(--card);border:1px solid #c3cfdd;border-radius:12px;
   text-decoration:none;color:var(--ink);transition:border-color .15s,background-color .15s}
 .app:hover{border-color:var(--brand-2);background:#f8fbfe}
 .app:active{background:var(--tint)}
@@ -173,7 +174,7 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .app small{display:block;font-size:13px;color:var(--muted);line-height:1.4;margin-top:2px}
 .tw{position:relative;display:flex}
 .tw>.app{flex:1;min-width:0}
-.mine-empty .btn,.sec .btn{min-height:40px}
+@media (pointer:fine){.mine-empty .btn,.sec .btn{min-height:40px}}
 .help a,.who-am a{white-space:nowrap}
 .loading .cached{max-width:400px;margin-top:10px}
 .mine-empty{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;padding:8px 12px;background:var(--tint);border-radius:12px;font-size:14px;color:var(--muted)}
@@ -193,8 +194,8 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .help a,.who-am a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;color:var(--brand-2);font-weight:700}
 .err-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;color:var(--brand);font-weight:700}
 .err-brand img{width:40px;height:40px;border-radius:10px}
-.order{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px}
-.order li{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 4px 4px 12px}
+.order{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.order li{min-width:0;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 4px 4px 12px}
 .order li b{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .order .btn{min-width:44px;padding:0}
 .cached{width:100%}
@@ -211,13 +212,14 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .pickbar b.warn{color:var(--danger)}
 .order li .ico{font-size:18px}
 .cached{margin:16px 0 0;text-align:left}
-.auth .errhead h1{color:var(--ink)}
+.auth .errhead h1{color:var(--ink);text-wrap:balance}
 .pu summary small{color:var(--muted);margin-left:auto}
 .pu .pl{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px;border-top:1px solid var(--line-2);margin:0;font-size:14px;font-weight:400;color:var(--ink)}
 .pu .pl .rolesel{margin-left:auto}
 .loading .slow{font-size:13px;text-align:center;max-width:280px;text-wrap:balance}
 .mine{background:var(--tint);border-radius:14px;padding:4px 14px 14px;margin-top:4px}
 .mine .sec{margin-top:12px}
+.mine .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 .mine .app{min-height:88px;background:#fff;border-color:#c9d8e8}
 .mine .app:hover{border-color:var(--brand-2)}
 .mine .app .ico{width:56px;height:56px;font-size:30px;background:#fff}
@@ -229,7 +231,8 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 @media (max-width:640px){
   .ft{display:block}
   .mine-empty{background:none;padding:0;justify-content:flex-end;margin:0 0 -6px}
-  .mine-empty>.ic,.mine-empty span{display:none}
+  .mine-empty>.ic{display:none}
+  .mine-empty span{font-size:13px;flex:1 1 0;min-width:0}
   .sec{margin:18px 0 8px}
   .app{min-height:66px;padding:10px 12px;gap:12px}
   .app .ico{width:44px;height:44px;font-size:24px}
@@ -667,6 +670,9 @@ Object.assign(I18N.en, {
   plantOnce:'You’ll only be asked this once. You can turn the question back on in the account menu.',
   editApp:n => `Edit ${n}`, delAppN:n => `Delete ${n}`, editUser:n => `Edit ${n}`, delUserN:n => `Delete ${n}`,
 });
+Object.assign(I18N.th, { cachedLoadingP:'ถ้ายังโหลดไม่เสร็จและเครื่องนี้ต่อ Wi-Fi โรงงานอยู่ เปิดแอปเหล่านี้ได้เลย' });
+Object.assign(I18N.zh, { cachedLoadingP:'如果仍在加载且本设备已连接工厂 Wi-Fi，可以直接打开这些应用' });
+Object.assign(I18N.en, { cachedLoadingP:'Still loading? If this device is on the plant Wi-Fi, you can open these now.' });
 Object.assign(I18N.th, {
   helpLoginNoContact:'ลืมรหัสผ่านหรือเข้าไม่ได้? แจ้งหัวหน้างานหรือทีม CPS', noMatchQ:q => `ไม่พบแอปที่ตรงกับ “${q}”`, pinsSaved:'บันทึกแอปของฉันแล้ว',
   roles:{admin:'ผู้ดูแลระบบ', auditor:'ผู้ตรวจ', tlgl:'TL/GL หัวหน้าไลน์', verifier:'ผู้ตรวจยืนยัน', issue_owner:'เจ้าของปัญหา', employee:'พนักงาน', viewer:'ดูอย่างเดียว', workshop_owner:'เจ้าของแผนก'},
@@ -1060,7 +1066,7 @@ function renderLoading(){
   applyLang();
   $('#root').innerHTML = `<main class="auth"><div class="loading" role="status"><img class="appicon" src="icon.webp" alt="" width="96" height="96">
     <span class="spin" aria-hidden="true"></span><span>${T('loading')}</span></div></main>`;
-  setTimeout(() => { const l = $('.loading'); if (l && !l.querySelector('.slow')) l.insertAdjacentHTML('beforeend', `<span class="slow">${T('loadingSlow')}</span>${cachedHtml()}`); }, 6000);
+  setTimeout(() => { const l = $('.loading'); if (l && !l.querySelector('.slow')) { l.insertAdjacentHTML('beforeend', `<span class="slow">${T('loadingSlow')}</span>`); l.insertAdjacentHTML('afterend', cachedHtml()); } }, 6000);
 }
 const menuHtml = () => `<div class="menu" id="menu">
     <div class="me"><b>${esc(dispName(me))}</b><small>${esc(me.username)}${isAdmin(me) ? ' · Admin' : ''}</small></div>
@@ -1119,7 +1125,7 @@ window.addEventListener('online', () => { if (SSO_URL && ssoError && $('[data-ac
 function renderSsoError(){
   $('#root').innerHTML = `<main class="auth"><div class="box">${langSwitch()}
     <div class="err-brand"><img src="icon.webp" alt="" width="40" height="40">CPS Digital Platform</div>
-    <div class="errhead">${ic(({offline:'wifiOff', timeout:'clock', network:'wifiOff'})[ssoErrKind] || 'alert')}<h1>${T('errT_' + (ssoErrKind || 'server'))}</h1></div>
+    <div class="errhead">${ic(({offline:'wifiOff', timeout:'clock', network:'globe'})[ssoErrKind] || 'alert')}<h1>${T('errT_' + (ssoErrKind || 'server'))}</h1></div>
     <p role="alert" class="errmsg">${T(({offline:'errOffline', timeout:'errTimeout', network:'errNetwork'})[ssoErrKind] || 'errServer')}</p>
     <button class="btn primary" data-act="sso-reload">${ic('refresh')}${T('ghRetry')}</button>
     ${cachedHtml()}
@@ -1132,7 +1138,7 @@ function cachedHtml(){
   let list = []; try { list = JSON.parse(lsGet(LS_APPCACHE)) || []; } catch {}
   if (!Array.isArray(list) || !list.length) return '';
   const off = ssoErrKind === 'offline', loading = !!$('.loading');
-  return `<section class="cached"><h2>${ic('factory')}${T(off ? 'cachedOfflineT' : 'cachedT')}</h2>${off || ssoErrKind === 'network' && !loading ? '' : `<p class="help" style="margin:0 0 10px;text-align:left">${T('cachedP')}</p>`}
+  return `<section class="cached"><h2>${ic('factory')}${T(off ? 'cachedOfflineT' : 'cachedT')}</h2>${off || ssoErrKind === 'network' && !loading ? '' : `<p class="help" style="margin:0 0 10px;text-align:left">${T(loading ? 'cachedLoadingP' : 'cachedP')}</p>`}
     <div class="grid">${list.map(a => `<div class="tw"><a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" data-plant="1">
       <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span><span class="tx"><b>${esc(a.name)}</b>${descOf(a) ? `<small>${esc(descOf(a))}</small>` : ''}<span class="badge">${ic('factory')}${T('plantOnly')}</span></span></a></div>`).join('')}</div></section>`;
 }
@@ -1580,7 +1586,7 @@ document.addEventListener('click', e => {
     case 'embed-close': if (history.state && history.state.embed) return history.back(); return embedClose();
     case 'profile': render(); return profileDlg();
     case 'go-portal': view = 'portal'; return render();
-    case 'go-settings': if (admin){ view = 'settings'; render(); } return;
+    case 'go-settings': if (admin){ view = 'settings'; render(); $('[role="tab"][aria-selected="true"]')?.focus(); } return;
   }
   if (!admin) return;
   switch (t.dataset.act){
