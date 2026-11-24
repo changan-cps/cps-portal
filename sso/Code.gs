@@ -43,7 +43,7 @@ function load_() {
   var p = props_(), n = Number(p.getProperty('DB_N') || 0), s = '';
   for (var i = 0; i < n; i++) s += p.getProperty('DB_' + i) || '';
   var db = s ? JSON.parse(s) : {};
-  db.users = db.users || []; db.apps = db.apps || []; db.news = db.news || []; db.rev = db.rev || 0;
+  db.users = db.users || []; db.apps = db.apps || []; db.news = db.news || []; db.contact = db.contact || ''; db.rev = db.rev || 0;
   return db;
 }
 function save_(db) {
@@ -109,7 +109,7 @@ function session_(db, token) {
 }
 /** What the portal shows this user: admins get everything, others only the apps they are allowed. */
 function view_(db, u) {
-  var out = { user: publicUser_(u), rev: db.rev, news: db.news,
+  var out = { user: publicUser_(u), rev: db.rev, news: db.news, contact: db.contact,
     apps: db.apps.filter(function (a) { return canUse_(u, a); }).map(publicApp_) };
   if (isAdmin_(u)) out.users = db.users.map(publicUser_);
   return out;
@@ -136,7 +136,7 @@ function cleanApps_(list) {
 
 // ------------------------------------------------------------------ actions
 var ACTIONS = {
-  status: function () { return { setup: !load_().users.length }; },
+  status: function () { var db = load_(); return { setup: !db.users.length, contact: db.contact }; },
 
   /** First run only: create the first admin (optionally importing the portal's existing apps / news). */
   setup: function (r) {
@@ -200,6 +200,7 @@ var ACTIONS = {
       if (!seen[me.username.toLowerCase()]) throw err_('VALIDATION', 'You cannot delete your own account');
       db.apps = apps; db.users = users;
       db.news = (Array.isArray(r.news) ? r.news : []).map(function (s) { return String(s).slice(0, 300); }).filter(String).slice(0, 50);
+      if (r.contact != null) db.contact = String(r.contact).replace(/\s+/g, ' ').trim().slice(0, 200);
       save_(db);
       return view_(db, findUser_(db, me.username));
     });

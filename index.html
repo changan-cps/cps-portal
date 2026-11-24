@@ -68,6 +68,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14p
 .panel a{color:var(--brand-2)}
 label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:8px;color:var(--ink);font-size:14px;font-weight:400;cursor:pointer}
 .err{color:var(--danger);font-size:13px;min-height:20px;margin-top:8px}
+.err:empty{min-height:0;margin:0}
 
 /* auth, loading, error */
 .auth{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
@@ -101,7 +102,8 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
 .brand{margin-right:auto;display:flex;align-items:center;gap:12px;min-width:0}
 .brand img{width:44px;height:44px;border-radius:11px;flex:none}
 .brand div{min-width:0}
-.brand h1{margin:0;display:block;font-size:19px;font-weight:700;line-height:1.2;color:var(--brand);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .wm{display:block;height:12px;width:auto;margin:1px 0 3px}
+.brand h1{margin:0;display:block;font-size:21px;font-weight:700;line-height:1.2;color:var(--brand);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand span{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tools{display:flex;align-items:center;gap:8px}
 .who{display:flex;align-items:center;gap:8px;min-height:44px;border:1px solid transparent;border-radius:99px;padding:3px 12px 3px 3px;background:none;cursor:pointer;color:var(--ink);font-size:14px;max-width:220px}
@@ -118,10 +120,11 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
 .menu .mi:hover{background:var(--bg)}
 .menu .mi .ic{color:var(--muted)}
 .menu .mi.danger,.menu .mi.danger .ic{color:var(--danger)}
+.menu .mi.danger{margin-top:6px;border-top:1px solid var(--line-2);border-radius:0 0 8px 8px}
 .menu .ml{font-size:12px;font-weight:600;color:var(--muted);padding:8px 10px 6px}
 .menu .lang{display:flex;margin:0 10px 8px}
 .menu .lang button{flex:1;min-height:44px}
-.langsel{display:none;width:auto;min-height:44px;padding:6px 8px;font-size:14px;border-color:var(--line)}
+.langsel{display:none;width:auto;min-height:44px;padding:6px 4px;font-size:14px;border-color:var(--line)}
 @media (max-width:900px){
   .who .nm,.tools .adm .txt{display:none}
   .tools .adm{padding:8px 11px}
@@ -132,6 +135,9 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
   .langsel{display:block}
   .who{padding:3px}
   .brand h1{font-size:17px}
+  .brand{gap:10px}
+  .brand span,.tagline{display:none}
+  .ft{display:block}
   .brand img{width:40px;height:40px}
   .hd .top{min-height:60px}
 }
@@ -148,7 +154,7 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .search button:hover{background:var(--bg);color:var(--ink)}
 .search button[hidden]{display:none}
 .sec{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;margin:24px 0 10px}
-.sec h2{grid-row:1;margin:0;font-size:16px;display:flex;align-items:center;gap:8px;color:var(--ink)}
+.sec h2{grid-row:1;margin:0;font-size:18px;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .sec h2 .ic{color:var(--brand)}
 .sec p{grid-row:2;grid-column:1/-1;margin:0;color:var(--muted);font-size:13px}
 .sec .n{grid-row:1;grid-column:2;color:var(--muted);font-size:13px;white-space:nowrap}
@@ -168,26 +174,31 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .pin:hover{background:var(--tint);color:var(--brand)}
 .pin[aria-pressed=true]{color:var(--brand)}
 .pin[aria-pressed=true] .ic{fill:currentColor}
-.mine{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 14px 14px;margin-top:4px}
+.mine{background:var(--tint);border-radius:14px;padding:4px 14px 14px;margin-top:4px}
 .mine .sec{margin-top:12px}
-.mine .app{min-height:88px;background:var(--tint);border-color:transparent}
+.mine .app{min-height:88px;background:#fff;border-color:#c9d8e8}
 .mine .app:hover{border-color:var(--brand-2)}
 .mine .app .ico{width:56px;height:56px;font-size:30px;background:#fff}
 .mine .app b{font-size:16.5px}
 .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-.help{margin:16px 0 0;font-size:13.5px;color:var(--muted);text-align:center}
+.help{margin:16px 0 0;font-size:13.5px;color:var(--muted);text-align:center;text-wrap:balance}
+.help b{color:var(--ink)}
+.ft{display:none;margin:8px 16px 24px;font-size:12px;line-height:1.7;color:var(--brand);text-align:center;text-wrap:balance}
+@media (max-width:640px){.toast{top:12px;bottom:auto}.ft{display:block}}
 .empty .who-am{margin-top:10px;color:var(--ink)}
 .plant-dlg p{margin:6px 0 0;color:var(--muted)}
 .badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:12px;font-weight:600;color:var(--warn-ink);background:var(--warn-bg);border-radius:6px;padding:2px 8px}
 .badge .ic{width:13px;height:13px}
 .lower{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
 @media (max-width:720px){.lower{grid-template-columns:1fr}}
-.lower h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px}
-.lower h3 .ic{color:var(--brand)}
+.lower.one{grid-template-columns:1fr}
+.lower h2{margin:0 0 12px;font-size:18px;display:flex;align-items:center;gap:8px}
+.lower h2 .ic{color:var(--brand)}
 .quick{display:flex;gap:8px;flex-wrap:wrap}
 .quick a{display:flex;flex-direction:column;align-items:center;gap:4px;width:100px;min-height:78px;padding:10px 6px;border-radius:10px;background:var(--bg);border:1px solid var(--line-2);font-size:12.5px;line-height:1.3;text-align:center;text-decoration:none;color:var(--ink)}
 .quick a:hover{border-color:var(--brand-2)}
-.quick a span{font-size:22px}
+.quick a>span[aria-hidden]{font-size:22px}
+.quick a b{font-weight:400}
 .news{list-style:none;margin:0;padding:0}
 .news li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:14px}
 .news li:last-child{border:0}
@@ -472,6 +483,39 @@ Object.assign(I18N.en, {
   newTab:'opens in a new tab', nResults:n => `${n} app${n === 1 ? '' : 's'} found`,
 });
 
+Object.assign(I18N.th, {
+  sub:'ระบบการผลิตฉางอัน', allApps:'แอปทั้งหมด', otherApps:'แอปอื่น ๆ', results:'ผลการค้นหา',
+  pinFull:'ปักหมุดได้สูงสุด 4 แอป เลิกปักหมุดแอปอื่นก่อน',
+  contact:'ช่องทางติดต่อทีม CPS', contactPh:'เช่น โทรภายใน 1234 · LINE @cps-team', contactHint:'แสดงในหน้าเข้าสู่ระบบ หน้าข้อผิดพลาด และหน้าที่ผู้ใช้ยังไม่มีสิทธิ์',
+  errOffline:'เครื่องนี้ไม่ได้ต่ออินเทอร์เน็ต ต่อ Wi-Fi หรือเน็ตมือถือ แล้วกดลองใหม่',
+  errTimeout:'เซิร์ฟเวอร์เข้าสู่ระบบตอบช้าเกินไป ลองใหม่อีกครั้งในอีกสักครู่',
+  errServer:'ระบบเข้าสู่ระบบมีปัญหาชั่วคราว ลองใหม่อีกครั้ง ถ้ายังไม่ได้ให้ติดต่อทีม CPS',
+  matrixCap:'สิทธิ์ของผู้ใช้แต่ละคนในแต่ละแอป',
+});
+Object.assign(I18N.zh, {
+  sub:'长安生产方式', allApps:'全部应用', otherApps:'其他应用', results:'搜索结果',
+  pinFull:'最多固定 4 个应用，请先取消固定其他应用',
+  contact:'CPS 团队联系方式', contactPh:'例如 分机 1234 · LINE @cps-team', contactHint:'显示在登录页、错误页以及尚无权限的页面',
+  errOffline:'本设备未连接网络。请连接 Wi-Fi 或移动数据，然后点击“重试”。',
+  errTimeout:'登录服务器响应太慢，请稍后再试。',
+  errServer:'登录系统暂时出现问题，请重试；如仍无法使用，请联系 CPS 团队。',
+  matrixCap:'每位用户在各应用中的权限',
+});
+Object.assign(I18N.en, {
+  sub:'Changan Production System', allApps:'All apps', otherApps:'Other apps', results:'Search results',
+  pinFull:'You can pin up to 4 apps. Unpin one first.',
+  contact:'How to reach the CPS team', contactPh:'e.g. ext. 1234 · LINE @cps-team', contactHint:'Shown on the sign-in page, error pages and to users who have no apps yet',
+  errOffline:'This device is offline. Connect to Wi-Fi or mobile data, then try again.',
+  errTimeout:'The sign-in server is taking too long. Try again in a moment.',
+  errServer:'The sign-in system has a temporary problem. Try again; if it keeps happening, contact the CPS team.',
+  matrixCap:'Each user’s access to each app',
+});
+const LS_CONTACT = 'cpsPortal.contact';
+const contactOf = () => String(cfg?.contact || lsGet(LS_CONTACT) || '').trim();
+const helpHtml = () => { const c = contactOf(); return `<p class="help">${T('helpLogin')}${c ? `: <b>${esc(c)}</b>` : ''}</p>`; };
+let ssoErrKind = 'server';
+const errKind = e => !navigator.onLine ? 'offline' : /^Timeout|20 s|20 วินาที|20 秒/.test(String(e?.message || e)) ? 'timeout' : 'server';
+
 function detectLang(){
   const saved = lsGet(LS_LANG);
   if (I18N[saved]) return saved;
@@ -567,10 +611,11 @@ async function sso(action, data = {}){
   if (!j.ok){ const e = new Error(j.message || j.code); e.code = j.code; throw e; }
   return j.data;
 }
-const ssoMsg = e => ({BAD_LOGIN:T('loginErr'), LOCKED:T('ssoLocked'), AUTH:T('ssoExpired'), FORBIDDEN:T('ssoForbidden')})[e.code] || (e.code ? (e.message || e.code) : T('ssoDown'));
+const ssoMsg = e => ({BAD_LOGIN:T('loginErr'), LOCKED:T('ssoLocked'), AUTH:T('ssoExpired'), FORBIDDEN:T('ssoForbidden')})[e.code] || (e.code ? (e.message || e.code) : T(({offline:'errOffline', timeout:'errTimeout'})[errKind(e)] || 'errServer'));
 function ssoApply(d){
   if (d.token) lsSet(LS_SSO, d.token);
-  cfg = {apps: d.apps, news: d.news || [], users: d.users || [d.user], rev: d.rev, updatedAt: 0};
+  cfg = {apps: d.apps, news: d.news || [], users: d.users || [d.user], rev: d.rev, updatedAt: 0, contact: d.contact || ''};
+  if (d.contact != null) lsSet(LS_CONTACT, d.contact || null);
   ssoUser = d.user.username; ssoNeedsSetup = false;
 }
 function ssoSignOut(){ lsSet(LS_SSO, null); ssoUser = null; cfg = {apps:[], users:[], news:[]}; }
@@ -675,8 +720,8 @@ async function loadCfg(){
         try { ssoApply(await sso('me', {token})); if (ssoNext()) return; }
         catch (e){ if (e.code === 'AUTH') lsSet(LS_SSO, null); else throw e; }
       }
-      if (!ssoUser) ssoNeedsSetup = (await sso('status')).setup;
-    } catch (e){ ssoError = e.message || String(e); }
+      if (!ssoUser){ const st = await sso('status'); ssoNeedsSetup = st.setup; if (st.contact != null){ cfg.contact = st.contact; lsSet(LS_CONTACT, st.contact || null); } }
+    } catch (e){ ssoError = e.message || String(e); ssoErrKind = errKind(e); }
     return;
   }
   let local = null, remote = null;
@@ -761,7 +806,7 @@ async function ssoSave(){
   ghBusy = true; ghState = {status:'saving'}; showGh();
   const sent = cfg.users.map(u => u.pw);
   try {
-    const d = await sso('save', {token: lsGet(LS_SSO), rev: cfg.rev, apps: cfg.apps, news: cfg.news || [],
+    const d = await sso('save', {token: lsGet(LS_SSO), rev: cfg.rev, apps: cfg.apps, news: cfg.news || [], contact: cfg.contact || '',
       users: cfg.users.map(u => ({username:u.username, name:u.name, role:u.role, apps:u.apps || [], roles:u.roles || {}, pw:u.pw}))});
     cfg.rev = d.rev;
     cfg.users.forEach((u, i) => { if (u.pw === sent[i]) delete u.pw; });
@@ -803,7 +848,21 @@ const myApps = () => cfg.apps.filter(a => isAdmin(me) || (me.apps||[]).includes(
 const unpublished = () => !SSO_URL && cfg.users.length && (cfg.updatedAt||0) > remoteAt;
 
 /* ---------------- render ---------------- */
-function render(){ renderView(); linkLabels(); }
+function focusKey(el){
+  if (!el || el === document.body || !el.dataset) return null;
+  for (const a of ['lang', 'langsel', 'tab', 'perm', 'permall', 'role', 'pin', 'act']){
+    if (el.dataset[a] == null) continue;
+    const attr = a.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+    return `[data-${attr}="${CSS.escape(el.dataset[a])}"]` + (el.dataset.i != null ? `[data-i="${CSS.escape(el.dataset.i)}"]` : '');
+  }
+  return el.id ? '#' + CSS.escape(el.id) : null;
+}
+function render(){
+  const key = focusKey(document.activeElement), inMenu = !!document.activeElement?.closest?.('#menu');
+  renderView(); linkLabels();
+  const n = key && (inMenu ? document.querySelector('#menu ' + key) : null) || (key && document.querySelector(key));
+  if (n && document.activeElement !== n) n.focus({preventScroll: true});
+}
 function renderLoading(){
   applyLang();
   $('#root').innerHTML = `<main class="auth"><div class="loading" role="status"><img class="appicon" src="icon.webp" alt="" width="96" height="96">
@@ -842,11 +901,11 @@ function renderView(){
   const adm = isAdmin(me);
   $('#root').innerHTML = `
     <header class="hd"><div class="in top">
-      <div class="brand"><img src="icon.webp" alt="" width="44" height="44"><div><h1>CPS Digital Platform</h1><span>Changan Production System${lang === 'zh' ? ' · 长安生产方式' : ''}</span></div></div>
+      <div class="brand"><img src="icon.webp" alt="" width="44" height="44"><div><img class="wm" src="changan-wordmark.png" alt="CHANGAN" width="115" height="12"><h1>CPS Digital Platform</h1><span>${T('sub')}</span></div></div>
       <div class="tools">
         ${adm ? (view === 'settings'
-            ? `<button class="btn adm" data-act="go-portal" aria-label="${esc(T('back'))}">${ic('back')}<span class="txt">${T('back')}</span></button>`
-            : `<button class="btn adm" data-act="go-settings" aria-label="${esc(T('settings'))}">${ic('settings')}<span class="txt">${T('settings')}</span></button>`) : ''}
+            ? `<button class="btn adm" data-act="go-portal" aria-label="${esc(T('back'))}" title="${esc(T('back'))}">${ic('back')}<span class="txt">${T('back')}</span></button>`
+            : `<button class="btn adm" data-act="go-settings" aria-label="${esc(T('settings'))}" title="${esc(T('settings'))}">${ic('settings')}<span class="txt">${T('settings')}</span></button>`) : ''}
         ${langSwitch()}${langSelect()}
         <button class="who" data-act="menu" aria-expanded="${menuOpen}" aria-controls="menu" aria-label="${esc(T('menu'))}"><span class="avatar" aria-hidden="true">${esc(initial(me))}</span><span class="nm">${esc(dispName(me))}</span></button>
       </div>
@@ -856,16 +915,17 @@ function renderView(){
     </header>
     <main>${view === 'settings' ? settingsHtml() : (!adm ? '' : (SSO_URL || ghToken()) ? ghBarHtml() : unpublished()
       ? `<div class="banner"><span>${T('bannerPortal')}</span>
-         <button class="btn small" data-act="export">${T('download')}</button></div>` : '') + portalHtml()}</main>`;
+         <button class="btn small" data-act="export">${T('download')}</button></div>` : '') + portalHtml()}</main>
+    <footer class="ft">Strategic Focus | AI Transformation | Breakout Products | Global Expansion | Quality &amp; Efficiency | World-Class Excellence</footer>`;
 }
 
 function renderSsoError(){
   $('#root').innerHTML = `<main class="auth"><div class="box">${langSwitch()}
     <img class="appicon" src="icon.webp" alt="" width="96" height="96"><h1>CPS Digital Platform</h1>
-    <p>${T('ssoDown')}</p>
+    <p role="alert">${T(({offline:'errOffline', timeout:'errTimeout'})[ssoErrKind] || 'errServer')}</p>
     <button class="btn primary" data-act="sso-reload">${ic('refresh')}${T('ghRetry')}</button>
     <details><summary>${T('details')}</summary><code>${esc(ssoError)}</code></details>
-    <p class="help">${T('helpLogin')}</p></div></main>`;
+    ${helpHtml()}</div></main>`;
 }
 
 function renderSetup(){
@@ -914,7 +974,7 @@ function renderLogin(){
     <label class="check"><input type="checkbox" name="r" ${(typedR ?? lsGet('cpsPortal.rememberPref') === '1') ? 'checked' : ''}> ${T('remember')}</label>
     <div class="err" id="err" role="alert"></div>
     <button class="btn primary">${T('login')}</button>
-    <p class="help">${T('helpLogin')}</p>
+    ${helpHtml()}
   </form></main>`;
   const lf = $('#loginForm');
   if (typedP) lf.p.value = typedP;
@@ -963,20 +1023,19 @@ function portalBody(){
         <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span>
         <span class="tx"><b>${esc(a.name)}</b>${d ? `<small>${esc(d)}</small>` : ''}${plant ? `<span class="badge">${ic('factory')}${T('plantOnly')}</span>` : ''}<span class="sr"> (${T('newTab')})</span></span></a>
         ${allTiles.length > 4 ? `<button type="button" class="pin" data-pin="${esc(a.id)}" aria-pressed="${on}" aria-label="${esc(on ? T('unpin', a.name) : T('pin', a.name))}" title="${esc(on ? T('unpin', a.name) : T('pin', a.name))}">${ic('pin')}</button>` : ''}</div>`; };
-  const sections = SERVERS.map(s => {
-    const items = tiles.filter(a => serverOf(a) === s.id);
-    return items.length ? `<section><div class="sec"><h2>${ic(s.icon)}${srvLabel(s.id)}</h2><p>${srvHint(s.id)}</p><span class="n">${T('nApps', items.length)}</span></div>
-      <div class="grid">${items.map(tile).join('')}</div></section>` : '';
-  }).join('');
+  const rest = tiles.filter(a => !mine.includes(a));
+  const head = ql ? T('results') : mine.length ? T('otherApps') : T('allApps');
+  const sections = rest.length ? `<section><div class="sec"><h2>${ic(ql ? 'search' : 'globe')}${head}</h2>${allTiles.length > 4 ? `<span class="n">${T('nApps', rest.length)}</span>` : ''}</div>
+      <div class="grid">${rest.map(tile).join('')}</div></section>` : '';
   return `
     ${mine.length ? `<section class="mine"><div class="sec"><h2>${ic(pins.length ? 'pin' : 'clock')}${T('mine')}</h2>${pins.length ? '' : `<p>${T('mineHint')}</p>`}</div><div class="grid">${mine.map(tile).join('')}</div></section>` : ''}
     ${tiles.length ? sections
     : (quick.length ? '' : `<div class="empty">${all.length ? `${T('noMatch')}<br><button class="btn" data-act="clear-q">${ic('x')}${T('clearSearch')}</button>`
-        : `${T('noApps')}<p class="who-am">${T('yourUser', esc(me.username))}</p>`}</div>`)}
-    ${quick.length || news.length ? `<div class="lower">
-      ${quick.length ? `<section class="panel"><h3>${ic('zap')}${T('quick')}</h3><div class="quick">${quick.map(a => `
-        <a href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span aria-hidden="true">${esc(a.icon || '🔗')}</span>${esc(a.name)}</a>`).join('')}</div></section>` : ''}
-      ${news.length ? `<section class="panel"><h3>${ic('megaphone')}${T('news')}</h3><ul class="news">${news.map(n => `<li>${esc(n)}</li>`).join('')}</ul></section>` : ''}
+        : `${T('noApps')}<p class="who-am">${T('yourUser', esc(me.username))}</p>${contactOf() ? `<p class="who-am"><b>${esc(contactOf())}</b></p>` : ''}`}</div>`)}
+    ${quick.length || news.length ? `<div class="lower${quick.length && news.length ? '' : ' one'}">
+      ${quick.length ? `<section class="panel"><h2>${ic('zap')}${T('quick')}</h2><div class="quick">${quick.map(a => `
+        <a href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${serverOf(a) === 'factory' ? 'data-plant="1"' : ''} ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span aria-hidden="true">${esc(a.icon || '🔗')}</span><b>${esc(a.name)}</b><span class="sr"> (${T('newTab')})</span></a>`).join('')}</div></section>` : ''}
+      ${news.length ? `<section class="panel"><h2>${ic('megaphone')}${T('news')}</h2><ul class="news">${news.map(n => `<li>${esc(n)}</li>`).join('')}</ul></section>` : ''}
     </div>` : ''}
     ${iosHintHtml()}`;
 }
@@ -986,22 +1045,25 @@ function settingsHtml(){
   return `
     ${(SSO_URL || ghToken()) ? ghBarHtml() : unpublished() ? `<div class="banner"><span>${T('bannerSettings')}</span>
       <button class="btn small" data-act="export">${T('download')}</button></div>` : ''}
-    <div class="tabs">${tabs.map(([k,l]) => `<button class="${tab===k?'on':''}" data-tab="${k}">${l}</button>`).join('')}</div>
-    <div class="panel">${({perm:permHtml, apps:appsHtml, users:usersHtml, news:newsHtml, publish:publishHtml})[tab]()}</div>`;
+    <div class="tabs" role="tablist">${tabs.map(([k,l]) => `<button class="${tab===k?'on':''}" data-tab="${k}" role="tab" id="tab-${k}" aria-selected="${tab===k}" aria-controls="tabpanel" tabindex="${tab===k?0:-1}">${l}</button>`).join('')}</div>
+    <div class="panel" role="tabpanel" id="tabpanel" aria-labelledby="tab-${tab}">${({perm:permHtml, apps:appsHtml, users:usersHtml, news:newsHtml, publish:publishHtml})[tab]()}</div>`;
 }
 
 function newsHtml(){
-  return `<h3 style="margin-top:0">${T('newsTitle')}</h3>
+  return `<h3 style="margin-top:0" id="contactT">${T('contact')}</h3>
+  <input type="text" id="contactBox" aria-labelledby="contactT" maxlength="200" placeholder="${esc(T('contactPh'))}" value="${esc(cfg.contact || '')}">
+  <p class="hint">${T('contactHint')}</p>
+  <h3 style="margin-top:24px">${T('newsTitle')}</h3>
   <textarea id="newsBox" placeholder="${esc(T('newsPh'))}">${esc((cfg.news||[]).join('\n'))}</textarea>
   <p class="hint">${T('newsHint')}</p>`;
 }
 
 function permHtml(){
   if (!cfg.apps.length) return `<div class="empty">${T('noAppsYet')}</div>`;
-  return `<div class="scroll"><table class="matrix">
-    <tr><th>${T('user')}</th>${cfg.apps.map(a => `<th class="app-col">${esc(a.icon||'')}<br>${esc(a.name)}<br><span title="${esc(srvLabel(serverOf(a)))}">${ic(serverInfo(a).icon)}</span></th>`).join('')}<th class="c">${T('all')}</th></tr>
+  return `<div class="scroll"><table class="matrix"><caption class="sr">${T('matrixCap')}</caption>
+    <tr><th scope="col">${T('user')}</th>${cfg.apps.map(a => `<th scope="col" class="app-col">${esc(a.icon||'')}<br>${esc(a.name)}<br><span title="${esc(srvLabel(serverOf(a)))}">${ic(serverInfo(a).icon)}</span></th>`).join('')}<th scope="col" class="c">${T('all')}</th></tr>
     ${cfg.users.map(u => { const adm = isAdmin(u); const all = adm || cfg.apps.every(a => (u.apps||[]).includes(a.id)); return `
-      <tr><td><b>${esc(dispName(u))}</b> ${adm?'<span class="tag admin">Admin</span>':''}<div class="url">${esc(u.username)}</div></td>
+      <tr><th scope="row" style="font-size:inherit;color:inherit;font-weight:400;white-space:normal"><b>${esc(dispName(u))}</b> ${adm?'<span class="tag admin">Admin</span>':''}<div class="url">${esc(u.username)}</div></th>
       ${cfg.apps.map(a => { const has = (u.apps||[]).includes(a.id), label = `aria-label="${esc(u.username)} – ${esc(a.name)}"`;
         if (!(a.roles||[]).length) return `<td class="c"><input type="checkbox" data-perm="${esc(u.username)}|${esc(a.id)}" ${adm||has?'checked':''} ${adm?'disabled':''} ${label}></td>`;
         const cur = (u.roles||{})[a.id] || (adm ? a.roles[0] : has ? a.roles[a.roles.length-1] : '');
@@ -1076,6 +1138,7 @@ function openDlg(html, onSubmit, okLabel){
     <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">${T('cancel')}</button><button class="btn primary">${okLabel || T('save')}</button></div></form>`;
   $('#dlgCancel').onclick = () => d.close();
   linkLabels(d);
+  const h = d.querySelector('h3'); if (h){ h.id = 'dlgTitle'; d.setAttribute('aria-labelledby', 'dlgTitle'); } else d.removeAttribute('aria-labelledby');
   $('#dlgForm').onsubmit = async e => {
     e.preventDefault();
     const msg = await onSubmit(e.target);
@@ -1195,7 +1258,11 @@ document.addEventListener('click', e => {
   });
 });
 // remember which apps were opened (capture: runs before the handlers that open apps)
-document.addEventListener('click', e => { const a = e.target.closest('a[data-app]'); if (a) addRecent(a.dataset.app); }, true);
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-app]');
+  if (!a || (a.dataset.plant && !plantGo && lsGet('cpsPortal.plantOk') !== '1')) return;     // plant apps count once the user confirms
+  addRecent(a.dataset.app);
+}, true);
 // apps on the plant network: say so before opening (a check from this https page to an http plant server is blocked by the browser)
 let plantGo = false;
 document.addEventListener('click', e => {
@@ -1208,6 +1275,7 @@ document.addEventListener('click', e => {
       if (f.dont.checked) lsSet('cpsPortal.plantOk', '1');
       plantGo = true; try { a.click(); } finally { plantGo = false; }
     }, T('openApp'));
+  $('#dlg .btn.primary')?.focus();
 }, true);
 // close the account menu on a click outside it
 document.addEventListener('click', e => {
@@ -1215,6 +1283,11 @@ document.addEventListener('click', e => {
 }, true);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && menuOpen){ menuOpen = false; render(); $('.who')?.focus(); }
+  if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && e.target.matches?.('[role="tab"]')){
+    const tabsEl = [...document.querySelectorAll('[role="tab"]')], i = tabsEl.indexOf(e.target);
+    const n = tabsEl[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabsEl.length) % tabsEl.length];
+    tab = n.dataset.tab; render(); $(`[data-tab="${tab}"]`)?.focus(); e.preventDefault(); return;
+  }
   if (menuOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.closest('#menu,.who')){      // move through the account menu
     const items = [...document.querySelectorAll('#menu button')], i = items.indexOf(document.activeElement);
     e.preventDefault(); items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
@@ -1279,8 +1352,17 @@ document.addEventListener('click', e => {
       localStorage.removeItem(LS_CFG); sessionStorage.removeItem(SS_ME); return loadCfg().then(render);
   }
 });
+// permission matrix: update the row in place, so focus and scroll position stay where the admin is working
+function syncMatrixRow(u){
+  const has = new Set(u.apps || []);
+  document.querySelectorAll(`[data-perm^="${CSS.escape(u.username)}|"]`).forEach(c => { c.checked = isAdmin(u) || has.has(c.dataset.perm.split('|')[1]); });
+  const all = document.querySelector(`[data-permall="${CSS.escape(u.username)}"]`);
+  if (all) all.checked = isAdmin(u) || cfg.apps.every(a => has.has(a.id));
+  showGh();
+}
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.id === 'contactBox' && isAdmin(me)){ cfg.contact = t.value.replace(/\s+/g, ' ').trim(); lsSet(LS_CONTACT, cfg.contact || null); saveCfg(); showGh(); return; }
   if (t.matches('[data-langsel]')){ lang = t.value; lsSet(LS_LANG, lang); return render(); }
   if (t.id === 'importFile' && t.files[0] && isAdmin(me)){
     t.files[0].text().then(txt => {
@@ -1305,10 +1387,10 @@ document.addEventListener('change', e => {
     const [un, id] = t.dataset.perm.split('|');
     const u = cfg.users.find(x => x.username === un); if (!u) return;
     const s = new Set(u.apps || []); t.checked ? s.add(id) : s.delete(id);
-    u.apps = [...s]; saveCfg(); render();
+    u.apps = [...s]; saveCfg(); syncMatrixRow(u);
   } else if (t.dataset.permall){
     const u = cfg.users.find(x => x.username === t.dataset.permall); if (!u) return;
-    u.apps = t.checked ? cfg.apps.map(a => a.id) : []; saveCfg(); render();
+    u.apps = t.checked ? cfg.apps.map(a => a.id) : []; saveCfg(); syncMatrixRow(u);
   }
 });
 document.addEventListener('input', e => {

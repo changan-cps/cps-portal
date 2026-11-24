@@ -1,7 +1,7 @@
 // Service worker: ทำให้ติดตั้งเป็นแอปได้ และเปิดได้แม้เน็ตหลุด (ใช้ไฟล์ล่าสุดที่เคยโหลด)
 // ดึงจากเน็ตก่อนเสมอ -> config.json / index.html ที่อัปเดตบน GitHub จะเห็นทันที
-const CACHE = 'cps-portal-v3';
-const SHELL = ['./', 'index.html', 'manifest.json', 'icon.webp', 'icon-192.png', 'icon-512.png', 'favicon.png'];
+const CACHE = 'cps-portal-v4';
+const SHELL = ['./', 'index.html', 'manifest.json', 'icon.webp', 'icon-192.png', 'icon-512.png', 'favicon.png', 'changan-wordmark.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

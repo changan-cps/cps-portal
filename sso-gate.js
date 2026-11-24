@@ -77,11 +77,15 @@
     var draw = function () {
       var box = document.createElement('div');
       box.setAttribute('role', 'alertdialog');
-      box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#06132b;color:#eaf1ff;font:16px/1.6 "Segoe UI",sans-serif;text-align:center;padding:24px';
-      box.innerHTML = '<div><div style="font-size:44px">🔒</div><h1 style="font-size:22px;margin:8px 0;color:inherit"></h1><p style="margin:0 0 18px;opacity:.85"></p>' +
-        '<a style="display:inline-block;background:#3b9bff;color:#04122b;font-weight:700;padding:10px 22px;border-radius:8px;text-decoration:none">CPS Digital Platform</a>' +
-        (replace ? '' : ' <button type="button" style="margin-left:8px;background:none;border:1px solid #5b77a8;color:inherit;padding:10px 18px;border-radius:8px;font:inherit;cursor:pointer">ปิด · Close</button>') + '</div>';
-      box.querySelector('h1').textContent = TEXT[kind][0]; box.querySelector('p').textContent = TEXT[kind][1];
+      box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#f2f5f9;color:#132238;font:16px/1.6 "Segoe UI","Leelawadee UI","Microsoft YaHei",sans-serif;text-align:center;padding:24px';
+      box.innerHTML = '<div style="max-width:420px;background:#fff;border:1px solid #d6dee9;border-radius:16px;padding:28px 24px">' +
+        '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#00467f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>' +
+        '<h1 style="font-size:21px;margin:8px 0;color:#00467f"></h1><p style="margin:0 0 18px;color:#4f5f76"></p>' +
+        '<a style="display:inline-flex;align-items:center;min-height:48px;background:#00467f;color:#fff;font-weight:700;padding:0 22px;border-radius:8px;text-decoration:none">CPS Digital Platform</a>' +
+        (replace ? '' : ' <button type="button" style="margin-left:8px;min-height:48px;background:#fff;border:1px solid #7a8aa0;color:inherit;padding:0 18px;border-radius:8px;font:inherit;cursor:pointer">ปิด · Close</button>') + '</div>';
+      box.querySelector('h1').textContent = TEXT[kind][0];
+      var contact = ''; try { contact = localStorage.getItem('cpsPortal.contact') || ''; } catch (e) {}
+      box.querySelector('p').textContent = TEXT[kind][1] + (contact ? ' · ' + contact : '');
       box.querySelector('a').href = portal;
       if (replace) document.body.innerHTML = ''; else box.querySelector('button').onclick = function () { box.remove(); };
       document.body.appendChild(box);
