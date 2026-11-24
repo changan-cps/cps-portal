@@ -12,11 +12,11 @@
 <meta name="apple-mobile-web-app-title" content="CPS">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b469f">
+<meta name="theme-color" content="#00467f">
 <style>
 :root{
   color-scheme:light;
-  --bg:#f2f5f9; --card:#fff; --ink:#132238; --muted:#4f5f76; --line:#d6dee9; --line-2:#e7ecf3; --field:#b9c6d6;
+  --bg:#f2f5f9; --card:#fff; --ink:#132238; --muted:#4f5f76; --line:#d6dee9; --line-2:#e7ecf3; --field:#7a8aa0;
   --brand:#00467f; --brand-2:#0b5cad; --brand-deep:#003563; --tint:#e8f0f8;
   --danger:#b42318; --ok:#127a5e; --warn-bg:#fff4d6; --warn-ink:#6b4a00; --warn-line:#f0d58a;
   --focus:#0b5cad;
@@ -43,10 +43,10 @@ a{color:var(--brand-2);text-underline-offset:3px}
 .btn.small .ic{width:15px;height:15px}
 input[type=text],input[type=password],input[type=url],input[type=search],select{width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--field);border-radius:8px;background:var(--card);font-size:16px}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:0;border-color:var(--focus)}
-input::placeholder,textarea::placeholder{color:#6b7a8f}
+input::placeholder,textarea::placeholder{color:#5f6e84}
 label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 5px}
 .lang{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
-.lang button{border:0;background:none;color:var(--muted);min-width:44px;min-height:38px;padding:0 10px;cursor:pointer;font-size:13px}
+.lang button{border:0;background:none;color:var(--muted);min-width:44px;min-height:38px;padding:0 10px;cursor:pointer;font-size:13px;white-space:nowrap}
 .lang button+button{border-left:1px solid var(--line)}
 .lang button:hover{background:var(--tint);color:var(--ink)}
 .lang button.on{background:var(--brand);color:#fff;font-weight:700}
@@ -84,6 +84,15 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
 .spin{width:26px;height:26px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--brand);animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(1turn)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.6s}}
+/* touch screens on the shop floor: bigger targets */
+@media (pointer:coarse){
+  .btn{min-height:48px}
+  .btn.small{min-height:44px;padding:6px 12px}
+  .lang button{min-height:48px;min-width:48px}
+  input[type=text],input[type=password],input[type=url],input[type=search],select{min-height:48px}
+  .rolesel{min-height:44px}
+  .tabs button{min-height:48px}
+}
 
 /* header */
 .in{max-width:1100px;margin:0 auto;padding:0 16px}
@@ -92,7 +101,7 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
 .brand{margin-right:auto;display:flex;align-items:center;gap:12px;min-width:0}
 .brand img{width:44px;height:44px;border-radius:11px;flex:none}
 .brand div{min-width:0}
-.brand b{display:block;font-size:19px;line-height:1.2;color:var(--brand);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand h1{margin:0;display:block;font-size:19px;font-weight:700;line-height:1.2;color:var(--brand);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand span{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tools{display:flex;align-items:center;gap:8px}
 .who{display:flex;align-items:center;gap:8px;min-height:44px;border:1px solid transparent;border-radius:99px;padding:3px 12px 3px 3px;background:none;cursor:pointer;color:var(--ink);font-size:14px;max-width:220px}
@@ -112,10 +121,17 @@ label.check{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:
 .menu .ml{font-size:12px;font-weight:600;color:var(--muted);padding:8px 10px 6px}
 .menu .lang{display:flex;margin:0 10px 8px}
 .menu .lang button{flex:1;min-height:44px}
+.langsel{display:none;width:auto;min-height:44px;padding:6px 8px;font-size:14px;border-color:var(--line)}
+@media (max-width:900px){
+  .who .nm,.tools .adm .txt{display:none}
+  .tools .adm{padding:8px 11px}
+}
 @media (max-width:640px){
-  .tools .lang,.tools .adm,.who .nm{display:none}
+  .hd{position:static}
+  .tools .lang,.tools .adm{display:none}
+  .langsel{display:block}
   .who{padding:3px}
-  .brand b{font-size:17px}
+  .brand h1{font-size:17px}
   .brand img{width:40px;height:40px}
   .hd .top{min-height:60px}
 }
@@ -146,8 +162,22 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .app .tx{min-width:0;flex:1}
 .app b{display:block;font-size:15px;line-height:1.3}
 .app small{display:block;font-size:13px;color:var(--muted);line-height:1.4;margin-top:2px}
-.app .go{color:#93a1b4}
-.app:hover .go{color:var(--brand-2)}
+.tw{position:relative}
+.tw .app{padding-right:60px}
+.pin{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:48px;height:48px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.pin:hover{background:var(--tint);color:var(--brand)}
+.pin[aria-pressed=true]{color:var(--brand)}
+.pin[aria-pressed=true] .ic{fill:currentColor}
+.mine{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 14px 14px;margin-top:4px}
+.mine .sec{margin-top:12px}
+.mine .app{min-height:88px;background:var(--tint);border-color:transparent}
+.mine .app:hover{border-color:var(--brand-2)}
+.mine .app .ico{width:56px;height:56px;font-size:30px;background:#fff}
+.mine .app b{font-size:16.5px}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.help{margin:16px 0 0;font-size:13.5px;color:var(--muted);text-align:center}
+.empty .who-am{margin-top:10px;color:var(--ink)}
+.plant-dlg p{margin:6px 0 0;color:var(--muted)}
 .badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:12px;font-weight:600;color:var(--warn-ink);background:var(--warn-bg);border-radius:6px;padding:2px 8px}
 .badge .ic{width:13px;height:13px}
 .lower{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
@@ -410,6 +440,38 @@ Object.assign(I18N.en, {
   ssoDown:'Can’t reach the sign-in server right now. Check that you’re online, then tap Retry.',
 });
 
+Object.assign(I18N.th, {
+  mine:'แอปของฉัน', mineHint:'ยังไม่ได้ปักหมุด จึงแสดงแอปที่ใช้ล่าสุด · แตะไอคอนหมุดที่การ์ดเพื่อปักหมุด',
+  pin:n => `ปักหมุด ${n} ไว้ในแอปของฉัน`, unpin:n => `เลิกปักหมุด ${n}`, pinFull:'ปักหมุดได้สูงสุด 4 แอป',
+  plantT:'แอปนี้ต้องต่อ Wi-Fi โรงงาน', plantP:n => `${n} เปิดได้เฉพาะเมื่อเครื่องนี้ต่อ Wi-Fi หรือเครือข่ายของโรงงาน ถ้าเปิดแล้วหน้าค้างหรือเข้าไม่ได้ ให้ตรวจการเชื่อมต่อ Wi-Fi ก่อน`,
+  plantDont:'ไม่ต้องถามอีกในเครื่องนี้', openApp:'เปิดแอป',
+  helpLogin:'ลืมรหัสผ่านหรือเข้าไม่ได้? ติดต่อทีม CPS', noApps:'คุณยังไม่ได้รับสิทธิ์ใช้งานแอปใด ๆ',
+  yourUser:u => `ชื่อผู้ใช้ของคุณคือ <b>${u}</b> แจ้งชื่อนี้กับทีม CPS เพื่อขอสิทธิ์`,
+  ssoLocked:'ใส่รหัสผิดหลายครั้ง กรุณารอ 15 นาที หรือติดต่อทีม CPS', ssoTimeout:'เซิร์ฟเวอร์เข้าสู่ระบบไม่ตอบภายใน 20 วินาที',
+  newTab:'เปิดในแท็บใหม่', nResults:n => `พบ ${n} แอป`,
+});
+Object.assign(I18N.zh, {
+  mine:'我的应用', mineHint:'尚未固定，显示最近使用的应用 · 点击卡片上的图钉即可固定',
+  pin:n => `将 ${n} 固定到我的应用`, unpin:n => `取消固定 ${n}`, pinFull:'最多固定 4 个应用',
+  plantT:'此应用需连接工厂网络', plantP:n => `${n} 仅在本设备连接工厂 Wi-Fi 或内网时可以打开。如果页面一直加载或无法访问，请先检查 Wi-Fi 连接。`,
+  plantDont:'在本设备上不再提示', openApp:'打开应用',
+  helpLogin:'忘记密码或无法登录？请联系 CPS 团队', noApps:'您还没有任何应用的使用权限',
+  yourUser:u => `您的用户名是 <b>${u}</b>，请将它告知 CPS 团队以开通权限`,
+  ssoLocked:'密码错误次数过多，请 15 分钟后再试，或联系 CPS 团队', ssoTimeout:'登录服务器 20 秒内没有响应',
+  newTab:'在新标签页打开', nResults:n => `找到 ${n} 个应用`,
+});
+Object.assign(I18N.en, {
+  mine:'My apps', mineHint:'Nothing pinned yet, so these are your recent apps · tap the pin on a card to pin it',
+  pin:n => `Pin ${n} to My apps`, unpin:n => `Unpin ${n}`, pinFull:'You can pin up to 4 apps',
+  plantT:'This app needs the plant network', plantP:n => `${n} opens only when this device is on the plant Wi-Fi or network. If it hangs or won’t load, check your Wi-Fi first.`,
+  plantDont:'Don’t ask again on this device', openApp:'Open app',
+  helpLogin:'Forgot your password or can’t sign in? Contact the CPS team', noApps:'You don’t have access to any apps yet',
+  yourUser:u => `Your username is <b>${u}</b>. Give it to the CPS team to get access.`,
+  ssoLocked:'Too many wrong passwords. Try again in 15 minutes or contact the CPS team.', ssoTimeout:'The sign-in server did not answer within 20 s',
+  ssoDown:'Can’t reach the sign-in server right now. Check that you’re online, then try again.',
+  newTab:'opens in a new tab', nResults:n => `${n} app${n === 1 ? '' : 's'} found`,
+});
+
 function detectLang(){
   const saved = lsGet(LS_LANG);
   if (I18N[saved]) return saved;
@@ -417,9 +479,12 @@ function detectLang(){
   return /(^|,)zh/.test(nav) ? 'zh' : /(^|,)th/.test(nav) ? 'th' : 'en';
 }
 let lang = detectLang();
-const T = (k, ...a) => { const v = I18N[lang][k] ?? I18N.en[k]; return typeof v === 'function' ? v(...a) : v; };
-const langSwitch = () => `<div class="lang" role="group" aria-label="Language">${LANGS.map(([k,l]) =>
-  `<button type="button" class="${k === lang ? 'on' : ''}" data-lang="${k}" lang="${k}">${l}</button>`).join('')}</div>`;
+const T = (k, ...a) => { const v = I18N[lang][k] ?? I18N.en[k], r = typeof v === 'function' ? v(...a) : v;
+  return typeof r === 'string' ? r.replace(/^(?:\p{Extended_Pictographic}\uFE0F?\s*)+/u, '') : r; };
+const langSwitch = () => `<div class="lang" role="group" aria-label="${esc(T('langLabel'))}">${LANGS.map(([k,l]) =>
+  `<button type="button" class="${k === lang ? 'on' : ''}" data-lang="${k}" lang="${k === 'zh' ? 'zh-CN' : k}" aria-pressed="${k === lang}">${l}</button>`).join('')}</div>`;
+const langSelect = () => `<select class="langsel" data-langsel aria-label="${esc(T('langLabel'))}">${LANGS.map(([k,l]) =>
+  `<option value="${k}" ${k === lang ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
 function applyLang(){
   document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
   if (typeof installBtn !== 'undefined') installBtn.lastChild.textContent = ' ' + T('install');
@@ -496,7 +561,7 @@ async function sso(action, data = {}){
   const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 20000);
   let r;
   try { r = await fetch(SSO_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...data}), signal: ctl.signal}); }
-  catch (e){ throw new Error(e.name === 'AbortError' ? 'Timeout: no answer from the sign-in server in 20 s' : (e.message || String(e))); }
+  catch (e){ throw new Error(e.name === 'AbortError' ? T('ssoTimeout') : (e.message || String(e))); }
   finally { clearTimeout(tm); }
   const j = await r.json();
   if (!j.ok){ const e = new Error(j.message || j.code); e.code = j.code; throw e; }
@@ -539,6 +604,7 @@ const ICO = {
   ext:'<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
   share:'<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>',
   refresh:'<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/>',
+  pin:'<path d="M12 17v5"/><path d="M9 10.8V4h6v6.8l3 3.2v2H6v-2l3-3.2z"/>',
 };
 const ic = (n, cls = '') => `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICO[n] || ''}</svg>`;
 // App descriptions: "ไทย ¦ 中文 ¦ English" (one per language) or the older "中文 · English"
@@ -555,6 +621,8 @@ const descOf = a => { const o = splitDesc(a.desc); return o[lang] || o.en || o.z
 // recently opened apps on this device
 const LS_RECENT = 'cpsPortal.recent';
 const recentIds = () => { try { const v = JSON.parse(lsGet(LS_RECENT)); return Array.isArray(v) ? v : []; } catch { return []; } };
+const pinKey = () => 'cpsPortal.pins.' + (me?.username || '');
+const pinIds = () => { try { const v = JSON.parse(lsGet(pinKey())); return Array.isArray(v) ? v : []; } catch { return []; } };
 const addRecent = id => lsSet(LS_RECENT, JSON.stringify([id, ...recentIds().filter(x => x !== id)].slice(0, 3)));
 // short message instead of alert()
 let toastTimer = null;
@@ -738,16 +806,16 @@ const unpublished = () => !SSO_URL && cfg.users.length && (cfg.updatedAt||0) > r
 function render(){ renderView(); linkLabels(); }
 function renderLoading(){
   applyLang();
-  $('#root').innerHTML = `<div class="auth"><div class="loading" role="status"><img class="appicon" src="icon.webp" alt="" width="96" height="96">
-    <span class="spin" aria-hidden="true"></span><span>${T('loading')}</span></div></div>`;
+  $('#root').innerHTML = `<main class="auth"><div class="loading" role="status"><img class="appicon" src="icon.webp" alt="" width="96" height="96">
+    <span class="spin" aria-hidden="true"></span><span>${T('loading')}</span></div></main>`;
 }
-const menuHtml = () => `<div class="menu" id="menu" role="menu" aria-label="${esc(T('menu'))}">
+const menuHtml = () => `<div class="menu" id="menu">
     <div class="me"><b>${esc(dispName(me))}</b><small>${esc(me.username)}${isAdmin(me) ? ' · Admin' : ''}</small></div>
-    <button class="mi" role="menuitem" data-act="profile">${ic('pencil')}${T('editProfile')}</button>
-    ${isAdmin(me) ? (view === 'settings' ? `<button class="mi" role="menuitem" data-act="go-portal">${ic('back')}${T('back')}</button>`
-      : `<button class="mi" role="menuitem" data-act="go-settings">${ic('settings')}${T('settings')}</button>`) : ''}
+    <button class="mi" data-act="profile">${ic('pencil')}${T('editProfile')}</button>
+    ${isAdmin(me) ? (view === 'settings' ? `<button class="mi" data-act="go-portal">${ic('back')}${T('back')}</button>`
+      : `<button class="mi" data-act="go-settings">${ic('settings')}${T('settings')}</button>`) : ''}
     <div class="ml">${T('langLabel')}</div>${langSwitch()}
-    <button class="mi danger" role="menuitem" data-act="logout">${ic('logout')}${T('logout')}</button>
+    <button class="mi danger" data-act="logout">${ic('logout')}${T('logout')}</button>
   </div>`;
 const IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone;
 const iosHintHtml = () => IS_IOS && !EMBED && lsGet('cpsPortal.iosHint') !== '0'
@@ -774,13 +842,13 @@ function renderView(){
   const adm = isAdmin(me);
   $('#root').innerHTML = `
     <header class="hd"><div class="in top">
-      <div class="brand"><img src="icon.webp" alt="" width="44" height="44"><div><b>CPS Digital Platform</b><span>Changan Production System${lang === 'zh' ? ' · 长安生产方式' : ''}</span></div></div>
+      <div class="brand"><img src="icon.webp" alt="" width="44" height="44"><div><h1>CPS Digital Platform</h1><span>Changan Production System${lang === 'zh' ? ' · 长安生产方式' : ''}</span></div></div>
       <div class="tools">
         ${adm ? (view === 'settings'
-            ? `<button class="btn adm" data-act="go-portal">${ic('back')}${T('back')}</button>`
-            : `<button class="btn adm" data-act="go-settings">${ic('settings')}${T('settings')}</button>`) : ''}
-        ${langSwitch()}
-        <button class="who" data-act="menu" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="${esc(T('menu'))}"><span class="avatar" aria-hidden="true">${esc(initial(me))}</span><span class="nm">${esc(dispName(me))}</span></button>
+            ? `<button class="btn adm" data-act="go-portal" aria-label="${esc(T('back'))}">${ic('back')}<span class="txt">${T('back')}</span></button>`
+            : `<button class="btn adm" data-act="go-settings" aria-label="${esc(T('settings'))}">${ic('settings')}<span class="txt">${T('settings')}</span></button>`) : ''}
+        ${langSwitch()}${langSelect()}
+        <button class="who" data-act="menu" aria-expanded="${menuOpen}" aria-controls="menu" aria-label="${esc(T('menu'))}"><span class="avatar" aria-hidden="true">${esc(initial(me))}</span><span class="nm">${esc(dispName(me))}</span></button>
       </div>
       ${menuOpen ? menuHtml() : ''}
     </div>
@@ -792,26 +860,27 @@ function renderView(){
 }
 
 function renderSsoError(){
-  $('#root').innerHTML = `<div class="auth"><div class="box">${langSwitch()}
+  $('#root').innerHTML = `<main class="auth"><div class="box">${langSwitch()}
     <img class="appicon" src="icon.webp" alt="" width="96" height="96"><h1>CPS Digital Platform</h1>
     <p>${T('ssoDown')}</p>
     <button class="btn primary" data-act="sso-reload">${ic('refresh')}${T('ghRetry')}</button>
-    <details><summary>${T('details')}</summary><code>${esc(ssoError)}</code></details></div></div>`;
+    <details><summary>${T('details')}</summary><code>${esc(ssoError)}</code></details>
+    <p class="help">${T('helpLogin')}</p></div></main>`;
 }
 
 function renderSetup(){
-  $('#root').innerHTML = `<div class="auth"><form class="box" id="setupForm">
+  $('#root').innerHTML = `<main class="auth"><form class="box" id="setupForm">
     ${langSwitch()}
     <img class="appicon" src="icon.webp" alt="" width="96" height="96">
     <h1>${T('setupTitle')}</h1>
     <p>${T('setupSub')}</p>
-    <label>${T('username')}</label><input type="text" name="u" required autocomplete="username" autofocus>
+    <label>${T('username')}</label><input type="text" name="u" required autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" autofocus>
     <label>${T('displayName')}</label><input type="text" name="n">
     <label>${T('pwMin')}</label><input type="password" name="p" required minlength="6" autocomplete="new-password">
     <label>${T('pwConfirm')}</label><input type="password" name="p2" required autocomplete="new-password">
-    <div class="err" id="err"></div>
+    <div class="err" id="err" role="alert"></div>
     <button class="btn primary">${T('createAdmin')}</button>
-  </form></div>`;
+  </form></main>`;
   $('#setupForm').onsubmit = async e => {
     e.preventDefault();
     const f = e.target, u = f.u.value.trim();
@@ -835,17 +904,18 @@ function renderLogin(){
   // keep what was typed when switching language
   const old = $('#loginForm');
   const typedU = old?.u.value, typedP = old?.p.value, typedR = old?.r.checked;
-  $('#root').innerHTML = `<div class="auth"><form class="box" id="loginForm">
+  $('#root').innerHTML = `<main class="auth"><form class="box" id="loginForm">
     ${langSwitch()}
     <img class="appicon" src="icon.webp" alt="" width="96" height="96">
     <h1>CPS Digital Platform</h1>
     <p>${T('loginSub')}</p>
-    <label>${T('username')}</label><input type="text" name="u" required autocomplete="username" value="${esc(typedU ?? lsGet(LS_LASTUSER) ?? '')}">
+    <label>${T('username')}</label><input type="text" name="u" required autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" value="${esc(typedU ?? lsGet(LS_LASTUSER) ?? '')}">
     <label>${T('password')}</label><input type="password" name="p" required autocomplete="current-password">
     <label class="check"><input type="checkbox" name="r" ${(typedR ?? lsGet('cpsPortal.rememberPref') === '1') ? 'checked' : ''}> ${T('remember')}</label>
-    <div class="err" id="err"></div>
+    <div class="err" id="err" role="alert"></div>
     <button class="btn primary">${T('login')}</button>
-  </form></div>`;
+    <p class="help">${T('helpLogin')}</p>
+  </form></main>`;
   const lf = $('#loginForm');
   if (typedP) lf.p.value = typedP;
   (lf.u.value ? lf.p : lf.u).focus();
@@ -872,32 +942,37 @@ function renderLogin(){
 }
 
 function portalHtml(){
+  if (myApps().length <= 4 && !q) return `<div id="pbody">${portalBody()}</div>`;      // nothing worth searching
   return `<div class="search">${ic('search')}<input type="search" id="q" placeholder="${esc(T('search'))}" value="${esc(q)}" aria-label="${esc(T('searchAria'))}" autocomplete="off" enterkeyhint="search">
       <button type="button" data-act="clear-q" aria-label="${esc(T('clearSearch'))}" ${q ? '' : 'hidden'}>${ic('x')}</button></div>
+    <p id="qstat" class="sr" aria-live="polite"></p>
     <div id="pbody">${portalBody()}</div>`;
 }
 function portalBody(){
   const all = myApps(), ql = q.trim().toLowerCase();
-  const list = all.filter(a => !ql || (a.name + ' ' + (a.desc || '') + ' ' + a.url).toLowerCase().includes(ql));
+  const list = all.filter(a => !ql || (a.name + ' ' + (a.desc || '') + ' ' + a.id).toLowerCase().includes(ql));
   const tiles = list.filter(a => a.kind !== 'quick');
   const quick = list.filter(a => a.kind === 'quick');
   const news = cfg.news || [];
   const allTiles = all.filter(a => a.kind !== 'quick');
-  const rec = ql || allTiles.length < 5 ? [] : recentIds().map(id => allTiles.find(a => a.id === id)).filter(Boolean);
-  const tile = a => { const d = descOf(a), plant = serverOf(a) === 'factory';
-    return `<a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}>
+  const pins = pinIds().filter(id => allTiles.some(a => a.id === id));
+  const mineIds = ql || allTiles.length <= 4 ? [] : pins.length ? pins : recentIds().filter(id => allTiles.some(a => a.id === id));
+  const mine = mineIds.map(id => allTiles.find(a => a.id === id));
+  const tile = a => { const d = descOf(a), plant = serverOf(a) === 'factory', on = pins.includes(a.id);
+    return `<div class="tw"><a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${plant ? 'data-plant="1"' : ''} ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}>
         <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span>
-        <span class="tx"><b>${esc(a.name)}</b>${d ? `<small>${esc(d)}</small>` : ''}${plant ? `<span class="badge">${ic('factory')}${T('plantOnly')}</span>` : ''}</span>
-        ${ic('chev', 'go')}</a>`; };
+        <span class="tx"><b>${esc(a.name)}</b>${d ? `<small>${esc(d)}</small>` : ''}${plant ? `<span class="badge">${ic('factory')}${T('plantOnly')}</span>` : ''}<span class="sr"> (${T('newTab')})</span></span></a>
+        ${allTiles.length > 4 ? `<button type="button" class="pin" data-pin="${esc(a.id)}" aria-pressed="${on}" aria-label="${esc(on ? T('unpin', a.name) : T('pin', a.name))}" title="${esc(on ? T('unpin', a.name) : T('pin', a.name))}">${ic('pin')}</button>` : ''}</div>`; };
   const sections = SERVERS.map(s => {
     const items = tiles.filter(a => serverOf(a) === s.id);
     return items.length ? `<section><div class="sec"><h2>${ic(s.icon)}${srvLabel(s.id)}</h2><p>${srvHint(s.id)}</p><span class="n">${T('nApps', items.length)}</span></div>
       <div class="grid">${items.map(tile).join('')}</div></section>` : '';
   }).join('');
   return `
-    ${rec.length ? `<section><div class="sec"><h2>${ic('clock')}${T('recent')}</h2></div><div class="grid">${rec.map(tile).join('')}</div></section>` : ''}
+    ${mine.length ? `<section class="mine"><div class="sec"><h2>${ic(pins.length ? 'pin' : 'clock')}${T('mine')}</h2>${pins.length ? '' : `<p>${T('mineHint')}</p>`}</div><div class="grid">${mine.map(tile).join('')}</div></section>` : ''}
     ${tiles.length ? sections
-    : (quick.length ? '' : `<div class="empty">${all.length ? `${T('noMatch')}<br><button class="btn" data-act="clear-q">${ic('x')}${T('clearSearch')}</button>` : T('noApps')}</div>`)}
+    : (quick.length ? '' : `<div class="empty">${all.length ? `${T('noMatch')}<br><button class="btn" data-act="clear-q">${ic('x')}${T('clearSearch')}</button>`
+        : `${T('noApps')}<p class="who-am">${T('yourUser', esc(me.username))}</p>`}</div>`)}
     ${quick.length || news.length ? `<div class="lower">
       ${quick.length ? `<section class="panel"><h3>${ic('zap')}${T('quick')}</h3><div class="quick">${quick.map(a => `
         <a href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span aria-hidden="true">${esc(a.icon || '🔗')}</span>${esc(a.name)}</a>`).join('')}</div></section>` : ''}
@@ -946,8 +1021,8 @@ function appsHtml(){
       <td>${serverTag(a)}</td>
       <td><a class="url" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.url)}</a></td>
       <td class="act">
-        <button class="btn small" data-act="app-up" data-i="${i}" ${i===0?'disabled':''} title="${esc(T('moveUp'))}">↑</button>
-        <button class="btn small" data-act="app-down" data-i="${i}" ${i===cfg.apps.length-1?'disabled':''} title="${esc(T('moveDown'))}">↓</button>
+        <button class="btn small" data-act="app-up" data-i="${i}" ${i===0?'disabled':''} title="${esc(T('moveUp'))}" aria-label="${esc(T('moveUp') + ' ' + a.name)}">↑</button>
+        <button class="btn small" data-act="app-down" data-i="${i}" ${i===cfg.apps.length-1?'disabled':''} title="${esc(T('moveDown'))}" aria-label="${esc(T('moveDown') + ' ' + a.name)}">↓</button>
         <button class="btn small" data-act="app-edit" data-i="${i}">${T('edit')}</button>
         <button class="btn small danger" data-act="app-del" data-i="${i}">${T('del')}</button></td></tr>`).join('')}
   </table></div>`;
@@ -979,7 +1054,7 @@ function publishHtml(){
        <form id="ghForm" class="row" style="flex-wrap:wrap;align-items:flex-end">
          <div style="flex:1 1 260px"><label>${T('ghToken')} · ${esc(repo)}</label><input type="password" name="t" required autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>
          <button class="btn primary" style="flex:0 0 auto">${T('ghConnect')}</button>
-       </form><div class="err" id="ghErr"></div>
+       </form><div class="err" id="ghErr" role="alert"></div>
        <p class="hint">${T('ghTokenHint')}</p>`;
   return `<h3 style="margin-top:0">${T('ghTitle')}</h3>${gh}
   <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
@@ -995,10 +1070,10 @@ function publishHtml(){
 }
 
 /* ---------------- dialogs ---------------- */
-function openDlg(html, onSubmit){
+function openDlg(html, onSubmit, okLabel){
   const d = $('#dlg');
-  d.innerHTML = `<form method="dialog" id="dlgForm">${html}<div class="err" id="derr"></div>
-    <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">${T('cancel')}</button><button class="btn primary">${T('save')}</button></div></form>`;
+  d.innerHTML = `<form method="dialog" id="dlgForm">${html}<div class="err" id="derr" role="alert"></div>
+    <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">${T('cancel')}</button><button class="btn primary">${okLabel || T('save')}</button></div></form>`;
   $('#dlgCancel').onclick = () => d.close();
   linkLabels(d);
   $('#dlgForm').onsubmit = async e => {
@@ -1121,15 +1196,32 @@ document.addEventListener('click', e => {
 });
 // remember which apps were opened (capture: runs before the handlers that open apps)
 document.addEventListener('click', e => { const a = e.target.closest('a[data-app]'); if (a) addRecent(a.dataset.app); }, true);
+// apps on the plant network: say so before opening (a check from this https page to an http plant server is blocked by the browser)
+let plantGo = false;
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-plant]');
+  if (!a || plantGo || e.ctrlKey || e.metaKey || e.shiftKey || lsGet('cpsPortal.plantOk') === '1') return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const name = a.querySelector('b')?.textContent || '';
+  openDlg(`<div class="plant-dlg"><h3>${T('plantT')}</h3><p>${esc(T('plantP', name))}</p>
+    <label class="check"><input type="checkbox" name="dont"> ${T('plantDont')}</label></div>`, f => {
+      if (f.dont.checked) lsSet('cpsPortal.plantOk', '1');
+      plantGo = true; try { a.click(); } finally { plantGo = false; }
+    }, T('openApp'));
+}, true);
 // close the account menu on a click outside it
 document.addEventListener('click', e => {
   if (menuOpen && !e.target.closest('#menu,[data-act="menu"]')){ menuOpen = false; $('#menu')?.remove(); $('.who')?.setAttribute('aria-expanded', 'false'); }
 }, true);
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && menuOpen){ menuOpen = false; render(); $('.who')?.focus(); }
+  if (menuOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target.closest('#menu,.who')){      // move through the account menu
+    const items = [...document.querySelectorAll('#menu button')], i = items.indexOf(document.activeElement);
+    e.preventDefault(); items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+  }
 });
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-act],[data-lang]');
+  const t = e.target.closest('[data-tab],[data-act],[data-lang],[data-pin]');
   if (!t) return;
   const inMenu = !!t.closest('#menu');
   if (t.dataset.lang){ lang = t.dataset.lang; lsSet(LS_LANG, lang); return render(); }
@@ -1138,6 +1230,13 @@ document.addEventListener('click', e => {
   if (t.dataset.act === 'sso-reload'){ renderLoading(); return loadCfg().then(render); }
   if (t.dataset.act === 'clear-q'){ q = ''; render(); return $('#q')?.focus(); }
   if (t.dataset.act === 'ios-hint-off'){ lsSet('cpsPortal.iosHint', '0'); return render(); }
+  if (t.dataset.pin){
+    const id = t.dataset.pin, cur = pinIds();
+    if (!cur.includes(id) && cur.length >= 4) return toast(T('pinFull'));
+    lsSet(pinKey(), JSON.stringify(cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]));
+    const b = $('#pbody'); if (b) b.innerHTML = portalBody();
+    return $(`[data-pin="${CSS.escape(id)}"]`)?.focus();
+  }
   if (t.dataset.tab){ tab = t.dataset.tab; return render(); }
   const i = t.dataset.i != null ? +t.dataset.i : null;
   const admin = isAdmin(me);
@@ -1182,6 +1281,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.matches('[data-langsel]')){ lang = t.value; lsSet(LS_LANG, lang); return render(); }
   if (t.id === 'importFile' && t.files[0] && isAdmin(me)){
     t.files[0].text().then(txt => {
       let c; try { c = JSON.parse(txt); } catch {}
@@ -1216,6 +1316,7 @@ document.addEventListener('input', e => {
   q = e.target.value;                         // redraw only the results, so typing never loses focus
   const b = $('#pbody'); if (b) b.innerHTML = portalBody();
   const c = $('.search [data-act="clear-q"]'); if (c) c.hidden = !q;
+  const st = $('#qstat'); if (st) st.textContent = q ? T('nResults', document.querySelectorAll('#pbody a[data-app]').length) : '';
 });
 
 /* ---------------- install as app (PWA) ---------------- */
