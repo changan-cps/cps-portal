@@ -57,6 +57,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14p
 .ebar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .ebar .btn{background:transparent;border-color:rgba(255,255,255,.5);color:#fff}
 .ebar .btn:hover{background:rgba(255,255,255,.14)}
+.ebar :focus-visible{outline-color:#fff}
 .embed iframe{flex:1;width:100%;border:0;background:#fff}
 .rolesel{width:auto;min-width:92px;min-height:36px;padding:5px 6px;font-size:13px}
 .ghbar:empty{display:none}
@@ -172,6 +173,9 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .app small{display:block;font-size:13px;color:var(--muted);line-height:1.4;margin-top:2px}
 .tw{position:relative;display:flex}
 .tw>.app{flex:1;min-width:0}
+.mine-empty .btn,.sec .btn{min-height:40px}
+.help a,.who-am a{white-space:nowrap}
+.loading .cached{max-width:400px;margin-top:10px}
 .mine-empty{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;padding:8px 12px;background:var(--tint);border-radius:12px;font-size:14px;color:var(--muted)}
 .mine-empty span{flex:1 1 180px;text-wrap:pretty}
 .app.pick.dim{border-style:dashed;background:var(--bg)}
@@ -222,7 +226,20 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .help{margin:16px 0 0;font-size:13.5px;color:var(--muted);text-align:center;text-wrap:balance}
 .help b{color:var(--ink)}
 .ft{display:none;margin:8px 16px 24px;font-size:12px;line-height:1.7;color:var(--brand);text-align:center;text-wrap:balance}
-@media (max-width:640px){.ft{display:block}}
+@media (max-width:640px){
+  .ft{display:block}
+  .mine-empty{background:none;padding:0;justify-content:flex-end;margin:0 0 -6px}
+  .mine-empty>.ic,.mine-empty span{display:none}
+  .sec{margin:18px 0 8px}
+  .app{min-height:66px;padding:10px 12px;gap:12px}
+  .app .ico{width:44px;height:44px;font-size:24px}
+  .grid{gap:8px}
+  .panel table:not(.matrix),.panel table:not(.matrix) tbody{display:block}
+  .panel table:not(.matrix) tr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 0;border-bottom:1px solid var(--line-2)}
+  .panel table:not(.matrix) tr:first-child{display:none}
+  .panel table:not(.matrix) td{border:0;padding:0}
+  .panel table:not(.matrix) td.act{flex-basis:100%;text-align:left;white-space:normal;display:flex;flex-wrap:wrap;gap:6px}
+}
 .empty .who-am{margin-top:10px;color:var(--ink)}
 .plant-dlg p{margin:6px 0 0;color:var(--muted)}
 .sec .btn{grid-row:1;grid-column:2}
@@ -650,11 +667,26 @@ Object.assign(I18N.en, {
   plantOnce:'You’ll only be asked this once. You can turn the question back on in the account menu.',
   editApp:n => `Edit ${n}`, delAppN:n => `Delete ${n}`, editUser:n => `Edit ${n}`, delUserN:n => `Delete ${n}`,
 });
+Object.assign(I18N.th, {
+  helpLoginNoContact:'ลืมรหัสผ่านหรือเข้าไม่ได้? แจ้งหัวหน้างานหรือทีม CPS', noMatchQ:q => `ไม่พบแอปที่ตรงกับ “${q}”`, pinsSaved:'บันทึกแอปของฉันแล้ว',
+  roles:{admin:'ผู้ดูแลระบบ', auditor:'ผู้ตรวจ', tlgl:'TL/GL หัวหน้าไลน์', verifier:'ผู้ตรวจยืนยัน', issue_owner:'เจ้าของปัญหา', employee:'พนักงาน', viewer:'ดูอย่างเดียว', workshop_owner:'เจ้าของแผนก'},
+});
+Object.assign(I18N.zh, {
+  helpLoginNoContact:'忘记密码或无法登录？请告知主管或 CPS 团队', noMatchQ:q => `没有与“${q}”匹配的应用`, pinsSaved:'已保存我的应用',
+  roles:{admin:'管理员', auditor:'审核员', tlgl:'TL/GL 线长', verifier:'验证人', issue_owner:'问题负责人', employee:'员工', viewer:'只读', workshop_owner:'车间负责人'},
+});
+Object.assign(I18N.en, {
+  helpLoginNoContact:'Forgot your password or can’t sign in? Tell your supervisor or the CPS team.', noMatchQ:q => `No apps match “${q}”`, pinsSaved:'My apps saved',
+  roles:{admin:'Administrator', auditor:'Auditor', tlgl:'TL/GL line leader', verifier:'Verifier', issue_owner:'Issue owner', employee:'Employee', viewer:'View only', workshop_owner:'Workshop owner'},
+});
+// readable role name, with the code kept for admins who know it
+const roleName = r => { const n = (T('roles') || {})[String(r).toLowerCase()]; return n ? `${n} (${r})` : r; };
 function contactHtml(c){
-  return String(c).split(/(https?:\/\/\S+|[\w.+-]+@[\w-]+\.[\w.]+|@[\w.-]{3,}|\+?\d[\d -]{2,}\d)/g).map((x, i) => {
+  return String(c).split(/(https?:\/\/\S+|[\w.+-]+@[\w-]+\.[\w.]+|(?:LINE\s*:?\s*)?@[\w.-]{3,}|\+?\d[\d -]{2,}\d)/gi).map((x, i) => {
     if (i % 2 === 0) return esc(x);
     if (/^https?:/.test(x)) return `<a href="${esc(x)}" target="_blank" rel="noopener">${esc(x)}</a>`;
-    if (x[0] === '@') return `<a href="https://line.me/R/ti/p/${encodeURIComponent(x)}" target="_blank" rel="noopener">${esc(x)}</a>`;
+    const line = x.match(/@[\w.-]{3,}$/);
+    if (line && !/^[\w.+-]+@/.test(x)) return `<a href="https://line.me/R/ti/p/${encodeURIComponent(line[0])}" target="_blank" rel="noopener">${esc(x)}</a>`;
     if (x.includes('@')) return `<a href="mailto:${esc(x)}">${esc(x)}</a>`;
     const digits = x.replace(/[^\d+]/g, '');
     return digits.replace('+', '').length < 6 ? esc(x) : `<a href="tel:${digits}">${esc(x)}</a>`;
@@ -663,7 +695,9 @@ function contactHtml(c){
 const LS_APPCACHE = 'cpsPortal.appsCache';   // last app list on this device, so Internal Server apps stay reachable when sign-in is down
 const LS_CONTACT = 'cpsPortal.contact';
 const contactOf = () => String(cfg?.contact || lsGet(LS_CONTACT) || '').trim();
-const helpHtml = (k = 'helpLogin') => { const c = contactOf(); return `<p class="help">${T(k)}${c ? `<br>${T('contactLbl')}${T('colon')}<b>${contactHtml(c)}</b>` : ''}</p>`; };
+const helpHtml = (k = 'helpLogin') => { const c = contactOf();
+  if (!c) return k === 'helpLogin' ? `<p class="help">${T('helpLoginNoContact')}</p>` : '';
+  return `<p class="help">${k ? T(k) + '<br>' : ''}${T('contactLbl')}${T('colon')}<b>${contactHtml(c)}</b></p>`; };
 let editPins = false;     // "Choose My apps" mode: cards become pin toggles, nothing opens
 let ssoErrKind = 'server';
 const errKind = e => !navigator.onLine ? 'offline' : e?.timeout ? 'timeout' : e?.net ? 'network' : 'server';
@@ -790,7 +824,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const ICO = {
   search:'<circle cx="11" cy="11" r="7.5"/><path d="m20.5 20.5-4.2-4.2"/>',
   x:'<path d="M18 6 6 18M6 6l12 12"/>',
-  settings:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  settings:'<path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.8l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.8v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
   back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
   logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
   pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
@@ -1026,7 +1060,7 @@ function renderLoading(){
   applyLang();
   $('#root').innerHTML = `<main class="auth"><div class="loading" role="status"><img class="appicon" src="icon.webp" alt="" width="96" height="96">
     <span class="spin" aria-hidden="true"></span><span>${T('loading')}</span></div></main>`;
-  setTimeout(() => { const l = $('.loading'); if (l && !l.querySelector('.slow')) l.insertAdjacentHTML('beforeend', `<span class="slow">${T('loadingSlow')}</span>`); }, 6000);
+  setTimeout(() => { const l = $('.loading'); if (l && !l.querySelector('.slow')) l.insertAdjacentHTML('beforeend', `<span class="slow">${T('loadingSlow')}</span>${cachedHtml()}`); }, 6000);
 }
 const menuHtml = () => `<div class="menu" id="menu">
     <div class="me"><b>${esc(dispName(me))}</b><small>${esc(me.username)}${isAdmin(me) ? ' · Admin' : ''}</small></div>
@@ -1080,6 +1114,8 @@ function renderView(){
     <footer class="ft">Strategic Focus | AI Transformation | Breakout Products | Global Expansion | Quality &amp; Efficiency | World-Class Excellence</footer>`;
 }
 
+// back online: try again by itself
+window.addEventListener('online', () => { if (SSO_URL && ssoError && $('[data-act="sso-reload"]')) $('[data-act="sso-reload"]').click(); });
 function renderSsoError(){
   $('#root').innerHTML = `<main class="auth"><div class="box">${langSwitch()}
     <div class="err-brand"><img src="icon.webp" alt="" width="40" height="40">CPS Digital Platform</div>
@@ -1088,15 +1124,17 @@ function renderSsoError(){
     <button class="btn primary" data-act="sso-reload">${ic('refresh')}${T('ghRetry')}</button>
     ${cachedHtml()}
     <details><summary>${T('details')}</summary><code>${esc(ssoError)}</code></details>
-    ${helpHtml('helpError')}</div></main>`;
+    ${helpHtml(ssoErrKind === 'server' ? '' : 'helpError')}</div></main>`;
+  clearTimeout(window.__ssoRetry);
+  if (ssoErrKind === 'timeout') window.__ssoRetry = setTimeout(() => { if (SSO_URL && ssoError && $('[data-act="sso-reload"]')) $('[data-act="sso-reload"]').click(); }, 30000);
 }
 function cachedHtml(){
   let list = []; try { list = JSON.parse(lsGet(LS_APPCACHE)) || []; } catch {}
   if (!Array.isArray(list) || !list.length) return '';
-  const off = ssoErrKind === 'offline';
-  return `<section class="cached"><h2>${ic('factory')}${T(off ? 'cachedOfflineT' : 'cachedT')}</h2>${off ? '' : `<p class="help" style="margin:0 0 10px;text-align:left">${T('cachedP')}</p>`}
+  const off = ssoErrKind === 'offline', loading = !!$('.loading');
+  return `<section class="cached"><h2>${ic('factory')}${T(off ? 'cachedOfflineT' : 'cachedT')}</h2>${off || ssoErrKind === 'network' && !loading ? '' : `<p class="help" style="margin:0 0 10px;text-align:left">${T('cachedP')}</p>`}
     <div class="grid">${list.map(a => `<div class="tw"><a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" data-plant="1">
-      <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span><span class="tx"><b>${esc(a.name)}</b>${descOf(a) ? `<small>${esc(descOf(a))}</small>` : ''}</span></a></div>`).join('')}</div></section>`;
+      <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span><span class="tx"><b>${esc(a.name)}</b>${descOf(a) ? `<small>${esc(descOf(a))}</small>` : ''}<span class="badge">${ic('factory')}${T('plantOnly')}</span></span></a></div>`).join('')}</div></section>`;
 }
 
 function renderSetup(){
@@ -1214,14 +1252,14 @@ function portalBody(){
   const rest = tiles.filter(a => !mine.includes(a));
   const sections = SERVERS.map(sv => {
     const items = rest.filter(a => serverOf(a) === sv.id);
-    return items.length ? `<section><div class="sec"><h2>${ic(sv.icon)}${srvLabel(sv.id)}</h2><span class="n">${T('nApps', items.length)}</span><p>${srvHint(sv.id)}</p></div>
+    return items.length ? `<section><div class="sec"><h2>${ic(sv.icon)}${srvLabel(sv.id)}</h2>${allTiles.length > 4 ? `<span class="n">${T('nApps', items.length)}</span>` : ''}<p>${srvHint(sv.id)}</p></div>
       <div class="grid">${items.map(tile).join('')}</div></section>` : '';
   }).join('');
   return `
     ${mine.length ? `<section class="mine"><div class="sec"><h2>${ic(pins.length ? 'pin' : 'clock')}${T('mine')}</h2>${editBtn}${pins.length ? '' : `<p>${T('mineHint')}</p>`}</div><div class="grid">${mine.map(tile).join('')}</div></section>`
       : !ql && allTiles.length > 4 ? `<div class="mine-empty">${ic('pin')}<span>${T('mineEmpty')}</span>${editBtn}</div>` : ''}
     ${tiles.length ? sections
-    : (quick.length ? '' : `<div class="empty">${all.length ? `${T('noMatch')}<br><button class="btn" data-act="clear-q">${ic('x')}${T('clearSearch')}</button>`
+    : (quick.length ? '' : `<div class="empty">${all.length ? `${esc(T('noMatchQ', q.trim()))}<br><button class="btn" data-act="clear-q">${ic('x')}${T('clearSearch')}</button>`
         : `${ic('lock')}<h2>${T('noApps')}</h2><p class="who-am">${T('yourUser', esc(me.username))}</p>${contactOf() ? `<p class="who-am">${T('contactLbl')}${T('colon')}<b>${contactHtml(contactOf())}</b></p>` : ''}`}</div>`)}
     ${quick.length || news.length ? `<div class="lower${quick.length && news.length ? '' : ' one'}">
       ${quick.length ? `<section class="panel"><h2>${ic('zap')}${T('quick')}</h2><div class="quick">${quick.map(a => `
@@ -1257,7 +1295,7 @@ function permHtml(){
         ${SERVERS.map(sv => { const list = cfg.apps.filter(a => serverOf(a) === sv.id); return list.length ? `<h4>${ic(sv.icon)}${srvLabel(sv.id)}</h4>` + list.map(a => { const has = (u.apps||[]).includes(a.id);
           if (!(a.roles||[]).length) return `<label class="pl"><input type="checkbox" data-perm="${esc(u.username)}|${esc(a.id)}" ${adm||has ? 'checked' : ''} ${adm ? 'disabled' : ''}> <span aria-hidden="true">${esc(a.icon||'')}</span> ${esc(a.name)}</label>`;
           const cur = (u.roles||{})[a.id] || (adm ? a.roles[0] : has ? a.roles[a.roles.length-1] : '');
-          return `<div class="pl role"><span class="slot"></span><span aria-hidden="true">${esc(a.icon||'')}</span> <span id="rl-${esc(u.username)}-${esc(a.id)}">${esc(a.name)}</span><select class="rolesel" data-role="${esc(u.username)}|${esc(a.id)}" aria-labelledby="rl-${esc(u.username)}-${esc(a.id)}">${adm ? '' : `<option value="">${T('roleNone')}</option>`}${a.roles.map(r => `<option ${r===cur?'selected':''}>${esc(r)}</option>`).join('')}</select></div>`; }).join('') : ''; }).join('')}
+          return `<div class="pl role"><span class="slot"></span><span aria-hidden="true">${esc(a.icon||'')}</span> <span id="rl-${esc(u.username)}-${esc(a.id)}">${esc(a.name)}</span><select class="rolesel" data-role="${esc(u.username)}|${esc(a.id)}" aria-labelledby="rl-${esc(u.username)}-${esc(a.id)}">${adm ? '' : `<option value="">${T('roleNone')}</option>`}${a.roles.map(r => `<option value="${esc(r)}" ${r===cur?'selected':''}>${esc(roleName(r))}</option>`).join('')}</select></div>`; }).join('') : ''; }).join('')}
       </details>`; }).join('')}<p class="hint">${T('permHint')}</p>`;
   return `<div class="scroll"><table class="matrix"><caption class="sr">${T('matrixCap')}</caption>
     <tr><th scope="col">${T('user')}</th>${cfg.apps.map(a => `<th scope="col" class="app-col">${esc(a.icon||'')}<br>${esc(a.name)}<br><span title="${esc(srvLabel(serverOf(a)))}">${ic(serverInfo(a).icon)}</span></th>`).join('')}<th scope="col" class="c">${T('all')}</th></tr>
@@ -1266,7 +1304,7 @@ function permHtml(){
       ${cfg.apps.map(a => { const has = (u.apps||[]).includes(a.id), label = `aria-label="${esc(u.username)} – ${esc(a.name)}"`;
         if (!(a.roles||[]).length) return `<td class="c"><input type="checkbox" data-perm="${esc(u.username)}|${esc(a.id)}" ${adm||has?'checked':''} ${adm?'disabled':''} ${label}></td>`;
         const cur = (u.roles||{})[a.id] || (adm ? a.roles[0] : has ? a.roles[a.roles.length-1] : '');
-        return `<td class="c"><select class="rolesel" data-role="${esc(u.username)}|${esc(a.id)}" ${label}>${adm ? '' : `<option value="">${T('roleNone')}</option>`}${a.roles.map(r => `<option ${r===cur?'selected':''}>${esc(r)}</option>`).join('')}</select></td>`; }).join('')}
+        return `<td class="c"><select class="rolesel" data-role="${esc(u.username)}|${esc(a.id)}" ${label}>${adm ? '' : `<option value="">${T('roleNone')}</option>`}${a.roles.map(r => `<option value="${esc(r)}" ${r===cur?'selected':''}>${esc(roleName(r))}</option>`).join('')}</select></td>`; }).join('')}
       <td class="c"><input type="checkbox" data-permall="${esc(u.username)}" ${all?'checked':''} ${adm?'disabled':''} aria-label="${esc(T('all'))}"></td></tr>`; }).join('')}
   </table></div>
   <p class="hint">${T('permHint')}</p>`;
@@ -1338,6 +1376,7 @@ function openDlg(html, onSubmit, okLabel, danger){
     <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">${T('cancel')}</button><button class="btn primary${danger ? ' danger-fill' : ''}">${okLabel || T('save')}</button></div></form>`;
   $('#dlgCancel').onclick = () => d.close();
   linkLabels(d);
+  const dp = d.querySelector('h3 ~ p'); if (dp){ dp.id = 'dlgDesc'; d.setAttribute('aria-describedby', 'dlgDesc'); } else d.removeAttribute('aria-describedby');
   const h = d.querySelector('h3'); if (h){ h.id = 'dlgTitle'; d.setAttribute('aria-labelledby', 'dlgTitle'); } else d.removeAttribute('aria-labelledby');
   $('#dlgForm').onsubmit = async e => {
     e.preventDefault();
@@ -1528,6 +1567,7 @@ document.addEventListener('click', e => {
   }
   if (t.dataset.act === 'pins-edit' || t.dataset.act === 'pins-done'){
     editPins = t.dataset.act === 'pins-edit';
+    if (!editPins) toast(T('pinsSaved'), true);
     render();
     return (editPins ? $('#pbody [data-pin]') : $('[data-act="pins-edit"]'))?.focus();
   }
