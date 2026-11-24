@@ -174,12 +174,26 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .tw>.app{flex:1;min-width:0}
 .mine-empty{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;padding:8px 12px;background:var(--tint);border-radius:12px;font-size:14px;color:var(--muted)}
 .mine-empty span{flex:1 1 180px;text-wrap:pretty}
-.app.pick.dim{opacity:.5}
+.app.pick.dim{border-style:dashed;background:var(--bg)}
+.app.pick.dim .chk{border:0;width:auto;height:auto;background:none;color:var(--muted);font-size:12px;font-weight:600}
+.pickbar{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;margin:14px -14px -14px;padding:10px 14px;background:#fff;border-top:1px solid var(--line);border-radius:0 0 14px 14px;box-shadow:0 -4px 12px rgba(0,0,0,.06)}
+.pickbar b{flex:1;font-size:15px}
+.pickbar .btn{min-width:120px}
+.mine.editing h3{font-size:14px;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.mine.editing h3 .ic{width:16px;height:16px}
+.order-d{margin:6px 0 4px}
+.order-d summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;color:var(--brand)}
+.pu h4{margin:0;padding:8px 12px 4px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;border-top:1px solid var(--line-2)}
+.pu h4 .ic{width:14px;height:14px}
+.pu .slot{width:22px;flex:none}
+.help a,.who-am a{display:inline-block;padding:4px 2px;color:var(--brand-2);font-weight:700}
+.err-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;color:var(--brand);font-weight:700}
+.err-brand img{width:40px;height:40px;border-radius:10px}
 .order{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px}
 .order li{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px 4px 4px 12px}
 .order li b{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .order .btn{min-width:44px;padding:0}
-.cached{width:100%;max-width:400px;margin:14px auto 0}
+.cached{width:100%;max-width:400px;margin:0 auto 14px}
 .cached h2{font-size:15px;margin:0 0 8px;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .cached h2 .ic{color:var(--brand)}
 .cached .grid{grid-template-columns:1fr}
@@ -594,13 +608,35 @@ Object.assign(I18N.en, {
   delUserBody:'This user will no longer be able to sign in. This applies to every device at once and cannot be undone.', delApp:'Delete app', delUser:'Delete user',
   nOf:(n, m) => `${n}/${m} apps`,
 });
+Object.assign(I18N.th, {
+  errT_network:'เชื่อมต่อเซิร์ฟเวอร์เข้าสู่ระบบไม่ได้', errNetwork:'เครือข่ายนี้ออกอินเทอร์เน็ตไม่ได้ หรือเซิร์ฟเวอร์ไม่ตอบ ถ้าต่อ Wi-Fi โรงงานอยู่ แอป Internal Server ยังเปิดได้ ลองใหม่เมื่อมีอินเทอร์เน็ต',
+  full:'เต็ม', reorder:n => `จัดลำดับแอปที่ปักหมุด (${n})`, colon:': ',
+});
+Object.assign(I18N.zh, {
+  errT_network:'无法连接登录服务器', errNetwork:'此网络无法访问互联网，或服务器没有响应。如果已连接工厂 Wi-Fi，内网应用仍可打开。有网络后请重试。',
+  full:'已满', reorder:n => `调整已固定应用的顺序（${n}）`, colon:'：', contactLbl:'联系方式',
+});
+Object.assign(I18N.en, {
+  errT_network:'Can’t reach the sign-in server', errNetwork:'This network has no internet access, or the server isn’t answering. On the plant Wi-Fi, Internal Server apps still open. Try again once you’re online.',
+  full:'Full', reorder:n => `Reorder pinned apps (${n})`, colon:': ',
+});
+// contact line: phone numbers, LINE IDs, e-mail and links become one tap away
+function contactHtml(c){
+  return String(c).split(/(https?:\/\/\S+|[\w.+-]+@[\w-]+\.[\w.]+|@[\w.-]{3,}|\+?\d[\d -]{2,}\d)/g).map((x, i) => {
+    if (i % 2 === 0) return esc(x);
+    if (/^https?:/.test(x)) return `<a href="${esc(x)}" target="_blank" rel="noopener">${esc(x)}</a>`;
+    if (x[0] === '@') return `<a href="https://line.me/R/ti/p/${encodeURIComponent(x)}" target="_blank" rel="noopener">${esc(x)}</a>`;
+    if (x.includes('@')) return `<a href="mailto:${esc(x)}">${esc(x)}</a>`;
+    return `<a href="tel:${x.replace(/[^\d+]/g, '')}">${esc(x)}</a>`;
+  }).join('');
+}
 const LS_APPCACHE = 'cpsPortal.appsCache';   // last app list on this device, so Internal Server apps stay reachable when sign-in is down
 const LS_CONTACT = 'cpsPortal.contact';
 const contactOf = () => String(cfg?.contact || lsGet(LS_CONTACT) || '').trim();
-const helpHtml = (k = 'helpLogin') => { const c = contactOf(); return `<p class="help">${T(k)}${c ? `<br>${T('contactLbl')}: <b>${esc(c)}</b>` : ''}</p>`; };
+const helpHtml = (k = 'helpLogin') => { const c = contactOf(); return `<p class="help">${T(k)}${c ? `<br>${T('contactLbl')}${T('colon')}<b>${contactHtml(c)}</b>` : ''}</p>`; };
 let editPins = false;     // "Choose My apps" mode: cards become pin toggles, nothing opens
 let ssoErrKind = 'server';
-const errKind = e => !navigator.onLine ? 'offline' : /^Timeout|20 s|20 วินาที|20 秒/.test(String(e?.message || e)) ? 'timeout' : 'server';
+const errKind = e => !navigator.onLine ? 'offline' : e?.timeout ? 'timeout' : e?.net ? 'network' : 'server';
 
 function detectLang(){
   const saved = lsGet(LS_LANG);
@@ -691,13 +727,13 @@ async function sso(action, data = {}){
   const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 20000);
   let r;
   try { r = await fetch(SSO_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...data}), signal: ctl.signal}); }
-  catch (e){ throw new Error(e.name === 'AbortError' ? T('ssoTimeout') : (e.message || String(e))); }
+  catch (e){ const x = new Error(e.name === 'AbortError' ? T('ssoTimeout') : (e.message || String(e))); x.net = e.name !== 'AbortError'; x.timeout = e.name === 'AbortError'; throw x; }
   finally { clearTimeout(tm); }
   const j = await r.json();
   if (!j.ok){ const e = new Error(j.message || j.code); e.code = j.code; throw e; }
   return j.data;
 }
-const ssoMsg = e => ({BAD_LOGIN:T('loginErr'), LOCKED:T('ssoLocked'), AUTH:T('ssoExpired'), FORBIDDEN:T('ssoForbidden')})[e.code] || (e.code ? (e.message || e.code) : T(({offline:'errOffline', timeout:'errTimeout'})[errKind(e)] || 'errServer'));
+const ssoMsg = e => ({BAD_LOGIN:T('loginErr'), LOCKED:T('ssoLocked'), AUTH:T('ssoExpired'), FORBIDDEN:T('ssoForbidden')})[e.code] || (e.code ? (e.message || e.code) : T(({offline:'errOffline', timeout:'errTimeout', network:'errNetwork'})[errKind(e)] || 'errServer'));
 function ssoApply(d){
   if (d.token) lsSet(LS_SSO, d.token);
   cfg = {apps: d.apps, news: d.news || [], users: d.users || [d.user], rev: d.rev, updatedAt: 0, contact: d.contact || ''};
@@ -756,16 +792,17 @@ function splitDesc(d){
 const joinDesc = o => (!o.th && !o.zh) ? o.en : [o.th, o.zh, o.en].join(' ¦ ');
 const descOf = a => { const o = splitDesc(a.desc); return o[lang] || o.en || o.zh || o.th; };
 // recently opened apps on this device
-const LS_RECENT = 'cpsPortal.recent';
-const recentIds = () => { try { const v = JSON.parse(lsGet(LS_RECENT)); return Array.isArray(v) ? v : []; } catch { return []; } };
+const recentKey = () => 'cpsPortal.recent.' + (me?.username || '');
+const recentIds = () => { try { const v = JSON.parse(lsGet(recentKey())); return Array.isArray(v) ? v : []; } catch { return []; } };
 const pinKey = () => 'cpsPortal.pins.' + (me?.username || '');
 const pinIds = () => { try { const v = JSON.parse(lsGet(pinKey())); return Array.isArray(v) ? v : []; } catch { return []; } };
-const addRecent = id => lsSet(LS_RECENT, JSON.stringify([id, ...recentIds().filter(x => x !== id)].slice(0, 3)));
+const addRecent = id => { if (me) lsSet(recentKey(), JSON.stringify([id, ...recentIds().filter(x => x !== id)].slice(0, 3))); };
 // short message instead of alert()
 let toastTimer = null;
-function toast(msg){
+function toast(msg, polite){
   let el = $('#toast');
-  if (!el){ el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; el.setAttribute('role', 'alert'); document.body.appendChild(el); }
+  if (!el){ el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; document.body.appendChild(el); }
+  el.setAttribute('role', polite ? 'status' : 'alert');
   el.textContent = msg; el.hidden = false;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 6000);
 }
@@ -1014,12 +1051,13 @@ function renderView(){
 }
 
 function renderSsoError(){
-  $('#root').innerHTML = `<main class="auth" style="align-content:center;grid-template-columns:minmax(0,400px);justify-content:center"><div class="box">${langSwitch()}
-    <div class="errhead">${ic(({offline:'wifiOff', timeout:'clock'})[ssoErrKind] || 'alert')}<h1>${T('errT_' + (ssoErrKind || 'server'))}</h1></div>
-    <p role="alert" class="errmsg">${T(({offline:'errOffline', timeout:'errTimeout'})[ssoErrKind] || 'errServer')}</p>
+  $('#root').innerHTML = `<main class="auth" style="align-content:center;grid-template-columns:minmax(0,400px);justify-content:center">${cachedHtml()}<div class="box">${langSwitch()}
+    <div class="err-brand"><img src="icon.webp" alt="" width="40" height="40">CPS Digital Platform</div>
+    <div class="errhead">${ic(({offline:'wifiOff', timeout:'clock', network:'wifiOff'})[ssoErrKind] || 'alert')}<h1>${T('errT_' + (ssoErrKind || 'server'))}</h1></div>
+    <p role="alert" class="errmsg">${T(({offline:'errOffline', timeout:'errTimeout', network:'errNetwork'})[ssoErrKind] || 'errServer')}</p>
     <button class="btn primary" data-act="sso-reload">${ic('refresh')}${T('ghRetry')}</button>
     <details><summary>${T('details')}</summary><code>${esc(ssoError)}</code></details>
-    ${helpHtml('helpError')}</div>${cachedHtml()}</main>`;
+    ${helpHtml('helpError')}</div></main>`;
 }
 function cachedHtml(){
   let list = []; try { list = JSON.parse(lsGet(LS_APPCACHE)) || []; } catch {}
@@ -1128,15 +1166,17 @@ function portalBody(){
   const pick = a => { const on = pins.includes(a.id), off = full && !on;
     return `<button type="button" class="app pick${on ? ' on' : ''}${off ? ' dim' : ''}" style="--c:${esc(a.color || COLORS[0])}" data-pin="${esc(a.id)}" aria-pressed="${on}" ${off ? 'aria-disabled="true"' : ''}>
         <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span><span class="tx"><b>${esc(a.name)}</b>${descOf(a) ? `<small>${esc(descOf(a))}</small>` : ''}</span>
-        <span class="chk" aria-hidden="true">${on ? ic('check') : ''}</span></button>`; };
+        <span class="chk" aria-hidden="true">${on ? ic('check') : off ? T('full') : ''}</span></button>`; };
   if (editPins && allTiles.length > 4){
     const pinned = pins.map(id => allTiles.find(a => a.id === id));
-    const order = pinned.length > 1 ? `<h3 class="sr">${T('pinOrder')}</h3><ol class="order">${pinned.map((a, i) => `<li><b>${esc(a.name)}</b>
+    const order = pinned.length > 1 ? `<details class="order-d"><summary>${T('reorder', pinned.length)}</summary><ol class="order">${pinned.map((a, i) => `<li><b>${esc(a.name)}</b>
         <button type="button" class="btn small" data-pinmove="${esc(a.id)}|-1" ${i === 0 ? 'disabled' : ''} aria-label="${esc(T('moveUpN', a.name))}">↑</button>
-        <button type="button" class="btn small" data-pinmove="${esc(a.id)}|1" ${i === pinned.length - 1 ? 'disabled' : ''} aria-label="${esc(T('moveDownN', a.name))}">↓</button></li>`).join('')}</ol>` : '';
-    return `<section class="mine editing"><div class="sec"><h2>${ic('pin')}${T('editMine')} · ${T('pinCount', pins.length, 4)}</h2>
-      <button type="button" class="btn small primary" data-act="pins-done">${ic('check')}${T('done')}</button><p>${T('editHint')}</p></div>
-      ${order}<div class="grid">${allTiles.map(pick).join('')}</div></section>`;
+        <button type="button" class="btn small" data-pinmove="${esc(a.id)}|1" ${i === pinned.length - 1 ? 'disabled' : ''} aria-label="${esc(T('moveDownN', a.name))}">↓</button></li>`).join('')}</ol></details>` : '';
+    const groups = SERVERS.map(sv => { const items = allTiles.filter(a => serverOf(a) === sv.id);
+      return items.length ? `<h3>${ic(sv.icon)}${srvLabel(sv.id)}</h3><div class="grid">${items.map(pick).join('')}</div>` : ''; }).join('');
+    return `<section class="mine editing"><div class="sec"><h2>${ic('pin')}${T('editMine')}</h2><p>${T('editHint')}</p></div>
+      ${order}${groups}
+      <div class="pickbar"><b aria-live="polite">${T('pinCount', pins.length, 4)}</b><button type="button" class="btn primary" data-act="pins-done">${ic('check')}${T('done')}</button></div></section>`;
   }
   const editBtn = `<button type="button" class="btn small" data-act="pins-edit">${ic('pin')}${T('editMine')}</button>`;
   const rest = tiles.filter(a => !mine.includes(a));
@@ -1150,7 +1190,7 @@ function portalBody(){
       : !ql && allTiles.length > 4 ? `<div class="mine-empty">${ic('pin')}<span>${T('mineEmpty')}</span>${editBtn}</div>` : ''}
     ${tiles.length ? sections
     : (quick.length ? '' : `<div class="empty">${all.length ? `${T('noMatch')}<br><button class="btn" data-act="clear-q">${ic('x')}${T('clearSearch')}</button>`
-        : `${ic('lock')}<h2>${T('noApps')}</h2><p class="who-am">${T('yourUser', esc(me.username))}</p>${contactOf() ? `<p class="who-am">${T('contactLbl')}: <b>${esc(contactOf())}</b></p>` : ''}`}</div>`)}
+        : `${ic('lock')}<h2>${T('noApps')}</h2><p class="who-am">${T('yourUser', esc(me.username))}</p>${contactOf() ? `<p class="who-am">${T('contactLbl')}${T('colon')}<b>${contactHtml(contactOf())}</b></p>` : ''}`}</div>`)}
     ${quick.length || news.length ? `<div class="lower${quick.length && news.length ? '' : ' one'}">
       ${quick.length ? `<section class="panel"><h2>${ic('zap')}${T('quick')}</h2><div class="quick">${quick.map(a => `
         <a href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${serverOf(a) === 'factory' ? 'data-plant="1"' : ''} ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span aria-hidden="true">${esc(a.icon || '🔗')}</span><b>${esc(a.name)}</b><span class="sr"> (${T('newTab')})</span></a>`).join('')}</div></section>` : ''}
@@ -1182,10 +1222,10 @@ function permHtml(){
   if (matchMedia('(max-width:640px)').matches) return `${cfg.users.map(u => { const adm = isAdmin(u), all = adm || cfg.apps.every(a => (u.apps||[]).includes(a.id)), n = adm ? cfg.apps.length : (u.apps||[]).filter(id => cfg.apps.some(a => a.id === id)).length;
       return `<details class="pu"><summary><b>${esc(dispName(u))}</b>${adm ? '<span class="tag admin">Admin</span>' : ''}<small>${T('nOf', n, cfg.apps.length)}</small></summary>
         <label class="pl"><input type="checkbox" data-permall="${esc(u.username)}" ${all ? 'checked' : ''} ${adm ? 'disabled' : ''}> ${T('all')}</label>
-        ${cfg.apps.map(a => { const has = (u.apps||[]).includes(a.id);
+        ${SERVERS.map(sv => { const list = cfg.apps.filter(a => serverOf(a) === sv.id); return list.length ? `<h4>${ic(sv.icon)}${srvLabel(sv.id)}</h4>` + list.map(a => { const has = (u.apps||[]).includes(a.id);
           if (!(a.roles||[]).length) return `<label class="pl"><input type="checkbox" data-perm="${esc(u.username)}|${esc(a.id)}" ${adm||has ? 'checked' : ''} ${adm ? 'disabled' : ''}> <span aria-hidden="true">${esc(a.icon||'')}</span> ${esc(a.name)}</label>`;
           const cur = (u.roles||{})[a.id] || (adm ? a.roles[0] : has ? a.roles[a.roles.length-1] : '');
-          return `<div class="pl"><span aria-hidden="true">${esc(a.icon||'')}</span> <span id="rl-${esc(u.username)}-${esc(a.id)}">${esc(a.name)}</span><select class="rolesel" data-role="${esc(u.username)}|${esc(a.id)}" aria-labelledby="rl-${esc(u.username)}-${esc(a.id)}">${adm ? '' : `<option value="">${T('roleNone')}</option>`}${a.roles.map(r => `<option ${r===cur?'selected':''}>${esc(r)}</option>`).join('')}</select></div>`; }).join('')}
+          return `<div class="pl"><span class="slot"></span><span aria-hidden="true">${esc(a.icon||'')}</span> <span id="rl-${esc(u.username)}-${esc(a.id)}">${esc(a.name)}</span><select class="rolesel" data-role="${esc(u.username)}|${esc(a.id)}" aria-labelledby="rl-${esc(u.username)}-${esc(a.id)}">${adm ? '' : `<option value="">${T('roleNone')}</option>`}${a.roles.map(r => `<option ${r===cur?'selected':''}>${esc(r)}</option>`).join('')}</select></div>`; }).join('') : ''; }).join('')}
       </details>`; }).join('')}<p class="hint">${T('permHint')}</p>`;
   return `<div class="scroll"><table class="matrix"><caption class="sr">${T('matrixCap')}</caption>
     <tr><th scope="col">${T('user')}</th>${cfg.apps.map(a => `<th scope="col" class="app-col">${esc(a.icon||'')}<br>${esc(a.name)}<br><span title="${esc(srvLabel(serverOf(a)))}">${ic(serverInfo(a).icon)}</span></th>`).join('')}<th scope="col" class="c">${T('all')}</th></tr>
@@ -1436,15 +1476,17 @@ document.addEventListener('click', e => {
     if (i < 0 || j < 0 || j >= cur.length) return;
     [cur[i], cur[j]] = [cur[j], cur[i]]; lsSet(pinKey(), JSON.stringify(cur));
     const b = $('#pbody'); if (b) b.innerHTML = portalBody();
+    const od = $('.order-d'); if (od) od.open = true;
     return ($(`[data-pinmove="${CSS.escape(t.dataset.pinmove)}"]:not(:disabled)`) || $(`[data-pinmove^="${CSS.escape(id)}|"]:not(:disabled)`))?.focus();
   }
   if (t.dataset.pin){
-    const id = t.dataset.pin, cur = pinIds();
-    if (!cur.includes(id) && cur.length >= 4) return toast(T('pinFull'));
+    const id = t.dataset.pin, cur = pinIds(), wasOpen = !!$('.order-d')?.open;
+    if (!cur.includes(id) && cur.length >= 4) return toast(T('pinFull'), true);
     lsSet(pinKey(), JSON.stringify(cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]));
     const b = $('#pbody'); if (b) b.innerHTML = portalBody();
     const name = myApps().find(a => a.id === id)?.name || '', st = $('#pinstat');
-    if (st) st.textContent = T(cur.includes(id) ? 'unpinned' : 'pinned', name);
+    if (st) st.textContent = T(cur.includes(id) ? 'unpinned' : 'pinned', name) + ' · ' + T('pinCount', pinIds().length, 4);
+    const od = $('.order-d'); if (od && wasOpen) od.open = true;
     return $(`[data-pin="${CSS.escape(id)}"]`)?.focus();
   }
   if (t.dataset.act === 'pins-edit' || t.dataset.act === 'pins-done'){
@@ -1457,7 +1499,7 @@ document.addEventListener('click', e => {
   const i = t.dataset.i != null ? +t.dataset.i : null;
   const admin = isAdmin(me);
   switch (t.dataset.act){
-    case 'logout': embedApp = null; sessionStorage.removeItem(SS_ME); forgetLogin(); lsSet(LS_APPCACHE, null); if (SSO_URL) ssoSignOut(); view = 'portal'; return render();
+    case 'logout': embedApp = null; sessionStorage.removeItem(SS_ME); forgetLogin(); if (SSO_URL) ssoSignOut(); view = 'portal'; return render();
     case 'embed-close': if (history.state && history.state.embed) return history.back(); return embedClose();
     case 'profile': render(); return profileDlg();
     case 'go-portal': view = 'portal'; return render();
@@ -1539,8 +1581,11 @@ document.addEventListener('input', e => {
   q = e.target.value;                         // redraw only the results, so typing never loses focus
   const b = $('#pbody'); if (b) b.innerHTML = portalBody();
   const c = $('.search [data-act="clear-q"]'); if (c) c.hidden = !q;
-  const st = $('#qstat'); if (st) st.textContent = q ? T('nResults', document.querySelectorAll('#pbody a[data-app]').length) : '';
+  const st = $('#qstat'); if (st) st.textContent = q ? T('nResults', document.querySelectorAll('#pbody .grid a[data-app]').length) : '';
 });
+
+// the permissions tab switches between table and per-user list when the phone rotates
+matchMedia('(max-width:640px)').addEventListener?.('change', () => { if (view === 'settings' && tab === 'perm' && me) render(); });
 
 /* ---------------- install as app (PWA) ---------------- */
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
