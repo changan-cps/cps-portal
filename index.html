@@ -158,7 +158,7 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .sec h2 .ic{color:var(--brand)}
 .sec p{grid-row:2;grid-column:1/-1;margin:0;color:var(--muted);font-size:13px}
 .sec .n{grid-row:1;grid-column:2;color:var(--muted);font-size:13px;white-space:nowrap}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));grid-auto-rows:1fr;gap:10px}
 .app{display:flex;align-items:center;gap:14px;min-height:78px;padding:12px 12px 12px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;
   text-decoration:none;color:var(--ink);transition:border-color .15s,background-color .15s}
 .app:hover{border-color:var(--brand-2);background:#f8fbfe}
@@ -168,7 +168,8 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .app .tx{min-width:0;flex:1}
 .app b{display:block;font-size:15px;line-height:1.3}
 .app small{display:block;font-size:13px;color:var(--muted);line-height:1.4;margin-top:2px}
-.tw{position:relative}
+.tw{position:relative;display:flex}
+.tw>.app{flex:1;min-width:0}
 .tw .app{padding-right:60px}
 .pin{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:48px;height:48px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center}
 .pin:hover{background:var(--tint);color:var(--brand)}
@@ -184,10 +185,27 @@ main{max-width:1100px;margin:0 auto;padding:16px 16px 80px}
 .help{margin:16px 0 0;font-size:13.5px;color:var(--muted);text-align:center;text-wrap:balance}
 .help b{color:var(--ink)}
 .ft{display:none;margin:8px 16px 24px;font-size:12px;line-height:1.7;color:var(--brand);text-align:center;text-wrap:balance}
-@media (max-width:640px){.toast{top:12px;bottom:auto}.ft{display:block}}
+@media (max-width:640px){.toast{bottom:84px}.ft{display:block}}
 .empty .who-am{margin-top:10px;color:var(--ink)}
 .plant-dlg p{margin:6px 0 0;color:var(--muted)}
-.badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:12px;font-weight:600;color:var(--warn-ink);background:var(--warn-bg);border-radius:6px;padding:2px 8px}
+.sec .btn{grid-row:1;grid-column:2}
+.app.pick{width:100%;text-align:left;font:inherit;cursor:pointer}
+.app.pick.on{border-color:var(--brand);background:var(--tint)}
+.chk{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--field);display:grid;place-items:center;color:#fff;background:#fff}
+.app.pick.on .chk{background:var(--brand);border-color:var(--brand)}
+.chk .ic{width:16px;height:16px}
+.mine.editing{outline:2px dashed var(--brand-2);outline-offset:-2px}
+.empty>.ic{width:40px;height:40px;color:var(--brand)}
+.empty h2{margin:10px 0 6px;font-size:18px;color:var(--ink)}
+.empty p{margin:6px 0 0}
+.auth .errhead{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:4px}
+.auth .errhead .ic{width:34px;height:34px;color:var(--danger)}
+.auth .errmsg{color:var(--ink);font-size:15px}
+.btn.primary.danger-fill{background:var(--danger);border-color:var(--danger)}
+.btn.primary.danger-fill:hover{background:#8f1c13;border-color:#8f1c13}
+dialog h3{font-size:17px;line-height:1.4}
+.matrix tr>th:first-child{position:sticky;left:0;z-index:1;background:var(--card)}
+.badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;white-space:nowrap;word-break:keep-all;font-size:12px;font-weight:600;color:var(--warn-ink);background:var(--warn-bg);border-radius:6px;padding:2px 8px}
 .badge .ic{width:13px;height:13px}
 .lower{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
 @media (max-width:720px){.lower{grid-template-columns:1fr}}
@@ -510,9 +528,34 @@ Object.assign(I18N.en, {
   errServer:'The sign-in system has a temporary problem. Try again; if it keeps happening, contact the CPS team.',
   matrixCap:'Each user’s access to each app',
 });
+Object.assign(I18N.th, {
+  mineHint:'ยังไม่ได้ปักหมุด จึงแสดงแอปที่ใช้ล่าสุด', mineEmpty:'ยังไม่มีแอปในส่วนนี้ กด เลือกแอปของฉัน เพื่อปักหมุดแอปที่ใช้บ่อย',
+  editMine:'เลือกแอปของฉัน', done:'เสร็จ', editHint:'แตะการ์ดเพื่อปักหมุดหรือเลิกปักหมุด (สูงสุด 4 แอป)',
+  pinned:n => `ปักหมุด ${n} แล้ว`, unpinned:n => `เลิกปักหมุด ${n} แล้ว`,
+  plantAskAgain:'ถามก่อนเปิดแอปโรงงานอีกครั้ง', plantAskDone:'จะถามก่อนเปิดแอปโรงงานทุกครั้ง',
+  errT_offline:'ไม่ได้ต่ออินเทอร์เน็ต', errT_timeout:'เซิร์ฟเวอร์ตอบช้า', errT_server:'ระบบเข้าสู่ระบบขัดข้อง',
+  helpError:'ถ้าลองใหม่แล้วยังไม่ได้ ติดต่อทีม CPS', contactLbl:'ช่องทางติดต่อ',
+});
+Object.assign(I18N.zh, {
+  mineHint:'尚未固定，显示最近使用的应用', mineEmpty:'这里还没有应用。点击“选择我的应用”固定常用应用',
+  editMine:'选择我的应用', done:'完成', editHint:'点击卡片以固定或取消固定（最多 4 个）',
+  pinned:n => `已固定 ${n}`, unpinned:n => `已取消固定 ${n}`,
+  plantAskAgain:'打开工厂应用前再次提示', plantAskDone:'打开工厂应用前将再次提示',
+  errT_offline:'未连接网络', errT_timeout:'服务器响应太慢', errT_server:'登录系统出现问题',
+  helpError:'如果重试后仍无法使用，请联系 CPS 团队', contactLbl:'联系方式',
+});
+Object.assign(I18N.en, {
+  mineHint:'Nothing pinned yet, so these are your recent apps', mineEmpty:'Nothing here yet. Tap Choose My apps to pin the ones you use most.',
+  editMine:'Choose My apps', done:'Done', editHint:'Tap a card to pin or unpin it (up to 4)',
+  pinned:n => `${n} pinned`, unpinned:n => `${n} unpinned`,
+  plantAskAgain:'Ask again before opening plant apps', plantAskDone:'You’ll be asked before opening plant apps',
+  errT_offline:'You’re offline', errT_timeout:'The server is slow', errT_server:'Sign-in is having problems',
+  helpError:'If retrying doesn’t help, contact the CPS team', contactLbl:'Contact',
+});
 const LS_CONTACT = 'cpsPortal.contact';
 const contactOf = () => String(cfg?.contact || lsGet(LS_CONTACT) || '').trim();
-const helpHtml = () => { const c = contactOf(); return `<p class="help">${T('helpLogin')}${c ? `: <b>${esc(c)}</b>` : ''}</p>`; };
+const helpHtml = (k = 'helpLogin') => { const c = contactOf(); return `<p class="help">${T(k)}${c ? `<br>${T('contactLbl')}: <b>${esc(c)}</b>` : ''}</p>`; };
+let editPins = false;     // "Choose My apps" mode: cards become pin toggles, nothing opens
 let ssoErrKind = 'server';
 const errKind = e => !navigator.onLine ? 'offline' : /^Timeout|20 s|20 วินาที|20 秒/.test(String(e?.message || e)) ? 'timeout' : 'server';
 
@@ -649,6 +692,10 @@ const ICO = {
   ext:'<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
   share:'<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>',
   refresh:'<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/>',
+  alert:'<circle cx="12" cy="12" r="9.5"/><path d="M12 7.5v5.5M12 16.5h.01"/>',
+  wifiOff:'<path d="m2 2 20 20"/><path d="M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.8M19 13a10 10 0 0 0-2.2-1.7M2 8.8a15 15 0 0 1 4.3-2.6M22 8.8A15 15 0 0 0 10.6 5"/><path d="M12 20h.01"/>',
+  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
   pin:'<path d="M12 17v5"/><path d="M9 10.8V4h6v6.8l3 3.2v2H6v-2l3-3.2z"/>',
 };
 const ic = (n, cls = '') => `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICO[n] || ''}</svg>`;
@@ -835,7 +882,7 @@ function ghInner(){
   if (s === 'pending' || unpublished()) return `<span>${T('ghPending')}</span><button class="btn small" data-act="gh-publish">${T('ghPublishNow')}</button>`;
   return '';
 }
-const ghBarHtml = () => `<div id="ghStatus" class="ghbar ${ghState.status}">${ghInner()}</div>`;
+const ghBarHtml = () => `<div id="ghStatus" class="ghbar ${ghState.status}" role="status" aria-live="polite">${ghInner()}</div>`;
 function showGh(){ const el = $('#ghStatus'); if (el){ el.className = 'ghbar ' + ghState.status; el.innerHTML = ghInner(); } }
 async function ghConnect(token){
   ghState = {status:'idle'};
@@ -873,6 +920,7 @@ const menuHtml = () => `<div class="menu" id="menu">
     <button class="mi" data-act="profile">${ic('pencil')}${T('editProfile')}</button>
     ${isAdmin(me) ? (view === 'settings' ? `<button class="mi" data-act="go-portal">${ic('back')}${T('back')}</button>`
       : `<button class="mi" data-act="go-settings">${ic('settings')}${T('settings')}</button>`) : ''}
+    ${lsGet('cpsPortal.plantOk') === '1' ? `<button class="mi" data-act="plant-ask">${ic('factory')}${T('plantAskAgain')}</button>` : ''}
     <div class="ml">${T('langLabel')}</div>${langSwitch()}
     <button class="mi danger" data-act="logout">${ic('logout')}${T('logout')}</button>
   </div>`;
@@ -921,11 +969,12 @@ function renderView(){
 
 function renderSsoError(){
   $('#root').innerHTML = `<main class="auth"><div class="box">${langSwitch()}
-    <img class="appicon" src="icon.webp" alt="" width="96" height="96"><h1>CPS Digital Platform</h1>
-    <p role="alert">${T(({offline:'errOffline', timeout:'errTimeout'})[ssoErrKind] || 'errServer')}</p>
+    <img class="appicon" src="icon.webp" alt="" width="96" height="96">
+    <div class="errhead">${ic(({offline:'wifiOff', timeout:'clock'})[ssoErrKind] || 'alert')}<h1>${T('errT_' + (ssoErrKind || 'server'))}</h1></div>
+    <p role="alert" class="errmsg">${T(({offline:'errOffline', timeout:'errTimeout'})[ssoErrKind] || 'errServer')}</p>
     <button class="btn primary" data-act="sso-reload">${ic('refresh')}${T('ghRetry')}</button>
     <details><summary>${T('details')}</summary><code>${esc(ssoError)}</code></details>
-    ${helpHtml()}</div></main>`;
+    ${helpHtml('helpError')}</div></main>`;
 }
 
 function renderSetup(){
@@ -1002,10 +1051,10 @@ function renderLogin(){
 }
 
 function portalHtml(){
-  if (myApps().length <= 4 && !q) return `<div id="pbody">${portalBody()}</div>`;      // nothing worth searching
+  if (myApps().length <= 4 && !q) return `<div id="pbody">${portalBody()}</div>`;      // nothing worth searching (and no pins)
   return `<div class="search">${ic('search')}<input type="search" id="q" placeholder="${esc(T('search'))}" value="${esc(q)}" aria-label="${esc(T('searchAria'))}" autocomplete="off" enterkeyhint="search">
       <button type="button" data-act="clear-q" aria-label="${esc(T('clearSearch'))}" ${q ? '' : 'hidden'}>${ic('x')}</button></div>
-    <p id="qstat" class="sr" aria-live="polite"></p>
+    <p id="qstat" class="sr" aria-live="polite"></p><p id="pinstat" class="sr" aria-live="polite"></p>
     <div id="pbody">${portalBody()}</div>`;
 }
 function portalBody(){
@@ -1022,16 +1071,25 @@ function portalBody(){
     return `<div class="tw"><a class="app" style="--c:${esc(a.color || COLORS[0])}" href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${plant ? 'data-plant="1"' : ''} ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}>
         <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span>
         <span class="tx"><b>${esc(a.name)}</b>${d ? `<small>${esc(d)}</small>` : ''}${plant ? `<span class="badge">${ic('factory')}${T('plantOnly')}</span>` : ''}<span class="sr"> (${T('newTab')})</span></span></a>
-        ${allTiles.length > 4 ? `<button type="button" class="pin" data-pin="${esc(a.id)}" aria-pressed="${on}" aria-label="${esc(on ? T('unpin', a.name) : T('pin', a.name))}" title="${esc(on ? T('unpin', a.name) : T('pin', a.name))}">${ic('pin')}</button>` : ''}</div>`; };
+        </div>`; };
+  const pick = a => { const on = pins.includes(a.id);
+    return `<button type="button" class="app pick${on ? ' on' : ''}" style="--c:${esc(a.color || COLORS[0])}" data-pin="${esc(a.id)}" aria-pressed="${on}">
+        <span class="ico" aria-hidden="true">${esc(a.icon || '🔗')}</span><span class="tx"><b>${esc(a.name)}</b>${descOf(a) ? `<small>${esc(descOf(a))}</small>` : ''}</span>
+        <span class="chk" aria-hidden="true">${on ? ic('check') : ''}</span></button>`; };
+  if (editPins && allTiles.length > 4) return `<section class="mine editing"><div class="sec"><h2>${ic('pin')}${T('editMine')}</h2>
+      <button type="button" class="btn small primary" data-act="pins-done">${ic('check')}${T('done')}</button><p>${T('editHint')}</p></div>
+      <div class="grid">${allTiles.map(pick).join('')}</div></section>`;
+  const editBtn = `<button type="button" class="btn small" data-act="pins-edit">${ic('pin')}${T('editMine')}</button>`;
   const rest = tiles.filter(a => !mine.includes(a));
   const head = ql ? T('results') : mine.length ? T('otherApps') : T('allApps');
   const sections = rest.length ? `<section><div class="sec"><h2>${ic(ql ? 'search' : 'globe')}${head}</h2>${allTiles.length > 4 ? `<span class="n">${T('nApps', rest.length)}</span>` : ''}</div>
       <div class="grid">${rest.map(tile).join('')}</div></section>` : '';
   return `
-    ${mine.length ? `<section class="mine"><div class="sec"><h2>${ic(pins.length ? 'pin' : 'clock')}${T('mine')}</h2>${pins.length ? '' : `<p>${T('mineHint')}</p>`}</div><div class="grid">${mine.map(tile).join('')}</div></section>` : ''}
+    ${mine.length ? `<section class="mine"><div class="sec"><h2>${ic(pins.length ? 'pin' : 'clock')}${T('mine')}</h2>${editBtn}${pins.length ? '' : `<p>${T('mineHint')}</p>`}</div><div class="grid">${mine.map(tile).join('')}</div></section>`
+      : !ql && allTiles.length > 4 ? `<section class="mine"><div class="sec"><h2>${ic('pin')}${T('mine')}</h2>${editBtn}<p>${T('mineEmpty')}</p></div></section>` : ''}
     ${tiles.length ? sections
     : (quick.length ? '' : `<div class="empty">${all.length ? `${T('noMatch')}<br><button class="btn" data-act="clear-q">${ic('x')}${T('clearSearch')}</button>`
-        : `${T('noApps')}<p class="who-am">${T('yourUser', esc(me.username))}</p>${contactOf() ? `<p class="who-am"><b>${esc(contactOf())}</b></p>` : ''}`}</div>`)}
+        : `${ic('lock')}<h2>${T('noApps')}</h2><p class="who-am">${T('yourUser', esc(me.username))}</p>${contactOf() ? `<p class="who-am">${T('contactLbl')}: <b>${esc(contactOf())}</b></p>` : ''}`}</div>`)}
     ${quick.length || news.length ? `<div class="lower${quick.length && news.length ? '' : ' one'}">
       ${quick.length ? `<section class="panel"><h2>${ic('zap')}${T('quick')}</h2><div class="quick">${quick.map(a => `
         <a href="${esc(a.url)}" target="_blank" rel="noopener" data-app="${esc(a.id)}" ${serverOf(a) === 'factory' ? 'data-plant="1"' : ''} ${SSO_URL && a.sso === 'ticket' ? `data-ticket="${esc(a.id)}"` : ''}><span aria-hidden="true">${esc(a.icon || '🔗')}</span><b>${esc(a.name)}</b><span class="sr"> (${T('newTab')})</span></a>`).join('')}</div></section>` : ''}
@@ -1132,10 +1190,11 @@ function publishHtml(){
 }
 
 /* ---------------- dialogs ---------------- */
-function openDlg(html, onSubmit, okLabel){
+function confirmDlg(msg, okLabel, onOk){ openDlg(`<h3>${esc(msg)}</h3>`, () => { onOk(); }, okLabel, true); }
+function openDlg(html, onSubmit, okLabel, danger){
   const d = $('#dlg');
   d.innerHTML = `<form method="dialog" id="dlgForm">${html}<div class="err" id="derr" role="alert"></div>
-    <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">${T('cancel')}</button><button class="btn primary">${okLabel || T('save')}</button></div></form>`;
+    <div class="dlg-actions"><button type="button" class="btn" id="dlgCancel">${T('cancel')}</button><button class="btn primary${danger ? ' danger-fill' : ''}">${okLabel || T('save')}</button></div></form>`;
   $('#dlgCancel').onclick = () => d.close();
   linkLabels(d);
   const h = d.querySelector('h3'); if (h){ h.id = 'dlgTitle'; d.setAttribute('aria-labelledby', 'dlgTitle'); } else d.removeAttribute('aria-labelledby');
@@ -1308,8 +1367,16 @@ document.addEventListener('click', e => {
     if (!cur.includes(id) && cur.length >= 4) return toast(T('pinFull'));
     lsSet(pinKey(), JSON.stringify(cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]));
     const b = $('#pbody'); if (b) b.innerHTML = portalBody();
+    const name = myApps().find(a => a.id === id)?.name || '', st = $('#pinstat');
+    if (st) st.textContent = T(cur.includes(id) ? 'unpinned' : 'pinned', name);
     return $(`[data-pin="${CSS.escape(id)}"]`)?.focus();
   }
+  if (t.dataset.act === 'pins-edit' || t.dataset.act === 'pins-done'){
+    editPins = t.dataset.act === 'pins-edit';
+    const b = $('#pbody'); if (b) b.innerHTML = portalBody();
+    return (editPins ? $('#pbody [data-pin]') : $('[data-act="pins-edit"]'))?.focus();
+  }
+  if (t.dataset.act === 'plant-ask'){ lsSet('cpsPortal.plantOk', null); render(); return toast(T('plantAskDone')); }
   if (t.dataset.tab){ tab = t.dataset.tab; return render(); }
   const i = t.dataset.i != null ? +t.dataset.i : null;
   const admin = isAdmin(me);
@@ -1329,15 +1396,13 @@ document.addEventListener('click', e => {
       [cfg.apps[i], cfg.apps[j]] = [cfg.apps[j], cfg.apps[i]]; saveCfg(); return render();
     }
     case 'app-del':
-      if (!confirm(T('confirmDelApp', cfg.apps[i].name))) return;
-      { const id = cfg.apps[i].id; cfg.apps.splice(i,1); cfg.users.forEach(u => u.apps = (u.apps||[]).filter(x => x !== id)); }
-      saveCfg(); return render();
+      return confirmDlg(T('confirmDelApp', cfg.apps[i].name), T('del'), () => {
+        const id = cfg.apps[i].id; cfg.apps.splice(i,1); cfg.users.forEach(u => u.apps = (u.apps||[]).filter(x => x !== id)); saveCfg(); });
     case 'user-new': return userDlg(null);
     case 'user-edit': return userDlg(i);
     case 'user-del':
       if (cfg.users[i].username === me.username) return;
-      if (!confirm(T('confirmDelUser', cfg.users[i].username))) return;
-      cfg.users.splice(i,1); saveCfg(); return render();
+      return confirmDlg(T('confirmDelUser', cfg.users[i].username), T('del'), () => { cfg.users.splice(i,1); saveCfg(); });
     case 'export': {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([JSON.stringify(cfg, null, 2)], {type:'application/json'}));
@@ -1348,8 +1413,7 @@ document.addEventListener('click', e => {
     case 'sso-save': return ssoSave();
     case 'gh-disconnect': lsSet(LS_GHTOKEN, null); ghState = {status:'idle'}; return render();
     case 'reset-local':
-      if (!confirm(T('confirmReset'))) return;
-      localStorage.removeItem(LS_CFG); sessionStorage.removeItem(SS_ME); return loadCfg().then(render);
+      return confirmDlg(T('confirmReset'), T('resetLocal'), () => { localStorage.removeItem(LS_CFG); sessionStorage.removeItem(SS_ME); loadCfg().then(render); });
   }
 });
 // permission matrix: update the row in place, so focus and scroll position stay where the admin is working
