@@ -111,8 +111,14 @@ function session_(db, token) {
 function view_(db, u) {
   var out = { user: publicUser_(u), rev: db.rev, news: db.news, contact: db.contact,
     apps: db.apps.filter(function (a) { return canUse_(u, a); }).map(publicApp_) };
-  if (isAdmin_(u)) out.users = db.users.map(publicUser_);
+  if (isAdmin_(u)) { out.users = db.users.map(publicUser_); out.locked = lockedNames_(db); }
   return out;
+}
+/** Usernames (lower case) currently locked out after too many wrong passwords. */
+function lockedNames_(db) {
+  var keys = db.users.map(function (u) { return 'fail:' + u.username.toLowerCase(); });
+  var got = keys.length ? CacheService.getScriptCache().getAll(keys) : {};
+  return keys.filter(function (k) { return Number(got[k] || 0) >= MAX_FAILS; }).map(function (k) { return k.slice(5); });
 }
 function cleanName_(s) { return String(s || '').replace(/\s+/g, ' ').trim().slice(0, 60); }
 function cleanUsername_(s) {
@@ -192,7 +198,7 @@ var ACTIONS = {
           apps: (Array.isArray(x.apps) ? x.apps : []).filter(function (id, i, a) { return ids[id] && a.indexOf(id) === i; }),
           roles: {}, salt: old.salt, hash: old.hash, pv: old.pv || 0 };
         u.apps.forEach(function (id) { var want = x.roles && x.roles[id], list = ids[id].roles; if (list.length) u.roles[id] = list.indexOf(want) >= 0 ? want : list[list.length - 1]; });
-        if (x.pw) setPassword_(u, x.pw);
+        if (x.pw) { setPassword_(u, x.pw); CacheService.getScriptCache().remove('fail:' + key); }
         if (!u.hash) throw err_('VALIDATION', 'New user ' + username + ' needs a password');
         return u;
       });
@@ -204,6 +210,16 @@ var ACTIONS = {
       save_(db);
       return view_(db, findUser_(db, me.username));
     });
+  },
+
+  /** Admin: lift the wrong-password lock on one user straight away. */
+  unlock: function (r) {
+    var db = load_(), me = session_(db, r.token);
+    if (!isAdmin_(me)) throw err_('FORBIDDEN', 'Admins only');
+    var name = String(r.username || '').trim().toLowerCase();
+    if (!findUser_(db, name)) throw err_('VALIDATION', 'No such user');
+    CacheService.getScriptCache().remove('fail:' + name);
+    return view_(db, me);
   },
 
   /** Hand-off ticket for one app. Only issued when this user is allowed to use it. */

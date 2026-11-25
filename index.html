@@ -310,6 +310,7 @@ td .url{color:var(--muted);font-size:13px;word-break:break-all}
 .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
 .tag .ic{width:13px;height:13px}
 .tag.admin{color:var(--brand);border-color:var(--brand)}
+.tag.lock{color:#a12a1d;border-color:#e8b4ab;background:#fdf0ed}
 .tag.srv{color:var(--s);border-color:currentColor;white-space:nowrap}
 .mini{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:9px;font-size:18px;background:color-mix(in srgb,var(--c) 13%,#fff);border:1px solid color-mix(in srgb,var(--c) 28%,#fff)}
 input[type=checkbox]{width:22px;height:22px;accent-color:var(--brand);cursor:pointer;flex:none}
@@ -368,7 +369,7 @@ const I18N = {
     addAppT:'添加应用', editAppT:'编辑应用', appName:'应用名称', url:'链接 (URL)', desc:'说明', position:'显示位置',
     posTile:'主磁贴', posQuick:'快捷入口 (下方小图标)', icon:'图标', color:'颜色', urlErr:'链接必须以 http:// 或 https:// 开头',
     addUserT:'添加用户', editUserT:'编辑用户', roleUser:'User — 只能看到已授权的应用', roleAdmin:'Admin — 可见全部应用并可设置',
-    pwNew:'新密码 (留空 = 不修改)', userExists:'用户名已存在', needAdmin:'至少需要 1 名管理员',
+    pwNew:'新密码 (留空 = 不修改)', lockedTag:'已锁定', unlock:'解锁', unlockN:n => `解锁 ${n}`, unlocked:n => `已解锁 ${n} — 现在即可登录`, userExists:'用户名已存在', needAdmin:'至少需要 1 名管理员',
     profile:'我的资料', usernameRO:'用户名 (用于登录 — 不可修改)', pwNewConfirm:'确认新密码',
     profileHint:'如在多台设备使用，请通知管理员更新 config.json，否则其他设备仍显示旧名称', needName:'请输入显示名称',
     confirmDelApp:n => `删除应用 “${n}” ？`, confirmDelUser:n => `删除用户 “${n}” ？`, confirmReset:'清除本浏览器中的修改，恢复使用网站上的 config.json ？',
@@ -399,7 +400,7 @@ const I18N = {
     addAppT:'Add app', editAppT:'Edit app', appName:'App name', url:'Link (URL)', desc:'Description', position:'Position',
     posTile:'Main tile', posQuick:'Quick Access (small icon below)', icon:'Icon', color:'Color', urlErr:'Link must start with http:// or https://',
     addUserT:'Add user', editUserT:'Edit user', roleUser:'User — sees only granted apps', roleAdmin:'Admin — sees every app + can change settings',
-    pwNew:'New password (leave blank = keep)', userExists:'That username already exists', needAdmin:'There must be at least 1 Admin',
+    pwNew:'New password (leave blank = keep)', lockedTag:'Locked', unlock:'Unlock', unlockN:n => `Unlock ${n}`, unlocked:n => `${n} unlocked — can sign in now`, userExists:'That username already exists', needAdmin:'There must be at least 1 Admin',
     profile:'My profile', usernameRO:'Username (for login — cannot change)', pwNewConfirm:'Confirm new password',
     profileHint:'If you use several devices, ask an Admin to update config.json, otherwise other devices keep the old name', needName:'Please enter a display name',
     confirmDelApp:n => `Delete app “${n}”?`, confirmDelUser:n => `Delete user “${n}”?`, confirmReset:'Clear the changes in this browser and go back to the config.json on the site?',
@@ -430,7 +431,7 @@ const I18N = {
     addAppT:'เพิ่มแอป', editAppT:'แก้ไขแอป', appName:'ชื่อแอป', url:'ลิงก์ (URL)', desc:'คำอธิบาย', position:'ตำแหน่งที่แสดง',
     posTile:'ไทล์หลัก', posQuick:'Quick Access (ไอคอนเล็กด้านล่าง)', icon:'ไอคอน', color:'สี', urlErr:'ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://',
     addUserT:'เพิ่มผู้ใช้', editUserT:'แก้ไขผู้ใช้', roleUser:'User — เห็นเฉพาะแอปที่ได้รับสิทธิ์', roleAdmin:'Admin — เห็นทุกแอป + ตั้งค่าได้',
-    pwNew:'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)', userExists:'มีชื่อผู้ใช้นี้อยู่แล้ว', needAdmin:'ต้องมี Admin อย่างน้อย 1 คน',
+    pwNew:'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)', lockedTag:'ถูกล็อก', unlock:'ปลดล็อก', unlockN:n => `ปลดล็อก ${n}`, unlocked:n => `ปลดล็อก ${n} แล้ว — เข้าสู่ระบบได้ทันที`, userExists:'มีชื่อผู้ใช้นี้อยู่แล้ว', needAdmin:'ต้องมี Admin อย่างน้อย 1 คน',
     profile:'โปรไฟล์ของฉัน', usernameRO:'ชื่อผู้ใช้ (ใช้ login — แก้ไม่ได้)', pwNewConfirm:'ยืนยันรหัสผ่านใหม่',
     profileHint:'ถ้าใช้หลายเครื่อง แจ้ง Admin ให้อัปเดต config.json ด้วย ไม่งั้นเครื่องอื่นจะยังเห็นชื่อเดิม', needName:'กรุณาใส่ชื่อที่แสดง',
     confirmDelApp:n => `ลบแอป "${n}" ?`, confirmDelUser:n => `ลบผู้ใช้ "${n}" ?`, confirmReset:'ล้างข้อมูลที่แก้ไขในเบราว์เซอร์นี้ แล้วกลับไปใช้ config.json บนเว็บ ?',
@@ -806,7 +807,7 @@ async function sso(action, data = {}){
 const ssoMsg = e => ({BAD_LOGIN:T('loginErr'), LOCKED:T('ssoLocked'), AUTH:T('ssoExpired'), FORBIDDEN:T('ssoForbidden')})[e.code] || (e.code ? (e.message || e.code) : T(({offline:'errOffline', timeout:'errTimeout', network:'errNetwork'})[errKind(e)] || 'errServer'));
 function ssoApply(d){
   if (d.token) lsSet(LS_SSO, d.token);
-  cfg = {apps: d.apps, news: d.news || [], users: d.users || [d.user], rev: d.rev, updatedAt: 0, contact: d.contact || ''};
+  cfg = {apps: d.apps, news: d.news || [], users: d.users || [d.user], rev: d.rev, updatedAt: 0, contact: d.contact || '', locked: d.locked || []};
   if (d.contact != null) lsSet(LS_CONTACT, d.contact || null);
   try { lsSet(LS_APPCACHE, JSON.stringify((d.apps || []).filter(a => a.server === 'factory' && a.sso !== 'ticket')
     .map(a => ({id:a.id, name:a.name, url:a.url, icon:a.icon, color:a.color, desc:a.desc, server:'factory'})))); } catch {}
@@ -1333,15 +1334,22 @@ function appsHtml(){
   </table></div>`;
 }
 
+const isLocked = u => (cfg.locked || []).includes(String(u.username || '').toLowerCase());
+async function unlockUser(i){
+  const u = cfg.users[i]; if (!u) return;
+  try { const d = await sso('unlock', {token: lsGet(LS_SSO), username: u.username}); cfg.locked = d.locked || []; toast(T('unlocked', dispName(u))); }
+  catch (e){ toast(ssoMsg(e)); }
+  render();
+}
 function usersHtml(){
   return `<div class="toolbar"><h2>${T('users')} (${cfg.users.length})</h2><button class="btn primary" data-act="user-new">${T('addUser')}</button></div>
   <div class="scroll"><table>
     <tr><th>${T('username')}</th><th>${T('displayName')}</th><th>${T('role')}</th><th class="c">${T('appCount')}</th><th></th></tr>
     ${cfg.users.map((u,i) => `<tr>
-      <td><b>${esc(u.username)}</b></td><td>${esc(dispName(u))}</td>
+      <td><b>${esc(u.username)}</b>${isLocked(u) ? ` <span class="tag lock">🔒 ${T('lockedTag')}</span>` : ''}</td><td>${esc(dispName(u))}</td>
       <td><span class="tag ${isAdmin(u)?'admin':''}">${isAdmin(u)?'Admin':'User'}</span></td>
       <td class="c">${isAdmin(u) ? T('all') : (u.apps||[]).filter(id => cfg.apps.some(a => a.id===id)).length}</td>
-      <td class="act"><button class="btn small" data-act="user-edit" data-i="${i}" aria-label="${esc(T('editUser', dispName(u)))}">${T('editReset')}</button>
+      <td class="act">${isLocked(u) ? `<button class="btn small primary" data-act="user-unlock" data-i="${i}" aria-label="${esc(T('unlockN', dispName(u)))}">${T('unlock')}</button>` : ''}<button class="btn small" data-act="user-edit" data-i="${i}" aria-label="${esc(T('editUser', dispName(u)))}">${T('editReset')}</button>
         <button class="btn small danger" data-act="user-del" data-i="${i}" ${u.username===me.username?'disabled':''} aria-label="${esc(T('delUserN', dispName(u)))}">${T('del')}</button></td></tr>`).join('')}
   </table></div>`;
 }
@@ -1602,6 +1610,7 @@ document.addEventListener('click', e => {
         T('delAppBody', cfg.users.filter(u => isAdmin(u) || (u.apps || []).includes(cfg.apps[i].id)).length));
     case 'user-new': return userDlg(null);
     case 'user-edit': return userDlg(i);
+    case 'user-unlock': return unlockUser(i);
     case 'user-del':
       if (cfg.users[i].username === me.username) return;
       return confirmDlg(T('confirmDelUser', cfg.users[i].username), T('delUser'), () => { cfg.users.splice(i,1); saveCfg(); }, T('delUserBody'));
